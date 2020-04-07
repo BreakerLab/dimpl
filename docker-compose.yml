@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  notebook:
+    image: breakerlab/dimpl
+    ports:
+      - 8888:8888
+    environment:
+      - JUPYTER_ENABLE_LAB=1
+      - GRANT_SUDO=yes
+    volumes:
+      - ./:/home/jovyan/work
+    restart: always
+    container_name: dimpl_container
+    entrypoint: [tini, --]
+    env_file: .env
+    command: [start-notebook.sh, --allow-root, --no-browser]

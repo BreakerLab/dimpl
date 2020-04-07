@@ -1,0 +1,5 @@
+*.fna
+*.gff.gz
+*.gbff.gz
+*.gff
+*.fna.gz

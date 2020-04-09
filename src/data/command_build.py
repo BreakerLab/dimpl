@@ -3,11 +3,6 @@ import tarfile
 import glob
 import shutil
 
-def make_executable(path):
-    mode = os.stat(path).st_mode
-    mode |= (mode & 0o444) >> 2    # copy R bits to X
-    os.chmod(path, mode)
-
 def build_infernal_commands(data_dir, step_name, no_secondary_structure=False):
 
     if not os.path.exists(data_dir + '/scripts'):
@@ -22,7 +17,8 @@ def build_infernal_commands(data_dir, step_name, no_secondary_structure=False):
     with open(infernal_run_script, 'w') as infernal_run: 
         infernal_run.write("#!/bin/bash\nSTEPNAME={}\n".format(step_name) + data)
 
-    make_executable(infernal_run_script)
+    # Make the script executable.
+    os.chmod(infernal_run_script, 0o775)
 
     # Add the outdir variable to the infernal source file
     with open("src/shell/infernal_source_template.sh", 'r') as infernal_source_template:

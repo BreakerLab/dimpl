@@ -59,5 +59,5 @@ def build_infernal_commands(data_dir, step_name, no_secondary_structure=False):
     with open("{}/scripts/{}_cmfinder_jobfile.sh".format(data_dir,step_name), 'w') as jobfile:
         for igr_filename in igr_list:
             igr_name = igr_filename[:-1].split('/')[-1]
-            jobfile.write("SEQNAME={}; source scripts/{}_cmfinder_source.sh; $CMFINDERCOMMAND\n".format(igr_name, step_name))
+            jobfile.write("SEQNAME={}; source scripts/{}_cmfinder_source.sh; bash -c \"$CMFINDERCOMMAND\" \n".format(igr_name, step_name))
             

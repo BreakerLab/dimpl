@@ -1,5 +1,3 @@
 !.gitignore
-*.sh
-*.fasta
-*.sto
+*
 !riboswitch_candidates/infernal_step2/motifs/purF-consensus.sto

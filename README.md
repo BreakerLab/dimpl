@@ -47,7 +47,7 @@ The DIMPL discovery pipeline enables rapid extraction and selection of bacterial
 
 #### Data Transfer between Local Machine and Cluster
 
-The DIMPL notebooks generate compressed .tar.gz files consisting of all the scripts and data necessary to run the more computational steps on a cluster. These .tar.gz files are placed in the directory data/export. After transferring the files to a cluster they should be unpacked using the command `tar xzvf data-dir.tar.gz`. When tasks on the cluster complete the directory should be recompressed using the command `tar czvf data-dir.tar.gz data-dir`.
+The DIMPL notebooks generate compressed .tar.gz files consisting of all the scripts and data necessary to run the more computationally demanding steps on a cluster. These .tar.gz files are placed in the directory data/export. After transferring the files to a cluster they should be unpacked using the command `tar xzvf data-dir.tar.gz`. When tasks on the cluster complete the directory should be recompressed using the command `tar czvf data-dir.tar.gz data-dir`.
 
 ### File Organization
 ------------

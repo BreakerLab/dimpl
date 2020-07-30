@@ -19,7 +19,7 @@ import genomeview
 from src.shell.gff2bed import convert
 
 Entrez.email = os.environ.get("ENTREZ_EMAIL")
-Entrez.api_key = os.environ.get("ENTREZ_API")
+Entrez.api_key = os.environ.get("ENTREZ_APIKEY")
 
 def get_nuccore_id(hit_accession):
     '''

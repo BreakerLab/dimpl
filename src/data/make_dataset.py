@@ -50,7 +50,7 @@ def download_genome(genome):
     """
 
     Entrez.email = os.environ.get("ENTREZ_EMAIL")
-    Entrez.api_key = os.environ.get("ENTREZ_API")
+    Entrez.api_key = os.environ.get("ENTREZ_APIKEY")
 
     genbank_filename = "data/raw/download/{}_{}_genomic.gbff.gz".format(genome.assembly_acc, genome.assembly_name)
 

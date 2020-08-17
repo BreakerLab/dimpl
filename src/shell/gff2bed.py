@@ -114,6 +114,7 @@ def convert(gff_file, bed_file, make_genome_file=False, desc_only=False):
             # Create 1 bed file line per unique exon in the gff file.
             # Multipl gff file lines are grouped together by IDs found in the "ID" and "parent" fields.
             if not first_line and (gff_id not in previous_ids):
+                skip = False
                 p = previous_data
 
                 # Create a meaningful label for the feature that (ideally) consists of three parts:
@@ -153,7 +154,7 @@ def convert(gff_file, bed_file, make_genome_file=False, desc_only=False):
 
                     # Skip features like: "23S ribosomal RNA rRNA prediction is too short"
                     if feature_desc.endswith('too short'):
-                        continue
+                        skip = True
                     feature_type = ""
     
                 # If gene name is also in the id, replace id with the contents of the "Dbxref" field.
@@ -231,8 +232,9 @@ def convert(gff_file, bed_file, make_genome_file=False, desc_only=False):
     
                 bed_line = "\t".join([ p['accno'], zero_based_start, p['end'], label, p['score'], p['strand'] ])
 
-                #print("BED:\t"+bed_line)
-                bed.write(bed_line + '\n')
+                if not skip:
+                    #print("BED:\t"+bed_line)
+                    bed.write(bed_line + '\n')
                 
                 attribs_saved = {}
                 previous_ids = []

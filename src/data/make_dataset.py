@@ -16,6 +16,9 @@ from src.data.rfam_db import rfam_session, Genome, t_full_region, t_genseq, Fami
 from itertools import compress
 from sqlalchemy import or_
 from urllib.error import HTTPError
+import sys
+import plotly as py
+from Bio import SeqIO, SeqRecord
 
 
 def main():
@@ -50,7 +53,7 @@ def download_genome(genome):
     """
 
     Entrez.email = os.environ.get("ENTREZ_EMAIL")
-    Entrez.api_key = os.environ.get("ENTREZ_API")
+    Entrez.api_key = os.environ.get("ENTREZ_APIKEY")
 
     genbank_filename = "data/raw/download/{}_{}_genomic.gbff.gz".format(genome.assembly_acc, genome.assembly_name)
 
@@ -99,7 +102,7 @@ def download_genome(genome):
 
         # Download the record summary for that genome assembly
         assembly_record_handle = Entrez.esummary(db="assembly", id=record_id)
-        assembly_record_summary_set = Entrez.read(assembly_record_handle)
+        assembly_record_summary_set = Entrez.read(assembly_record_handle, validate = False)
         assembly_record_handle.close()
         assembly_record_summary = assembly_record_summary_set['DocumentSummarySet']['DocumentSummary'][0]
 
@@ -115,7 +118,6 @@ def download_genome(genome):
             shutil.copyfileobj(request, genbank_file)
 
     return
-
 
 def extract_igrs(genome, igr_length_cutoff=1):
     """For a genbank file, create a SeqRecord with all features annotated, identify all of the inter-genic regions,
@@ -298,6 +300,8 @@ def write_sto(directory, igr_name, igr_seq, suffix=''):
         output_file.write("{}       {}\n".format(igr_name, igr_seq))
         output_file.write("#=GC SS_cons{}{}\n//".format((" " * (len(igr_name)-5)), ("." * len(igr_seq))))
         output_file.close()
+
+
 
 
 if __name__ == '__main__':

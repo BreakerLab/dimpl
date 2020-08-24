@@ -102,7 +102,7 @@ def download_genome(genome):
 
         # Download the record summary for that genome assembly
         assembly_record_handle = Entrez.esummary(db="assembly", id=record_id)
-        assembly_record_summary_set = Entrez.read(assembly_record_handle)
+        assembly_record_summary_set = Entrez.read(assembly_record_handle, validate = False)
         assembly_record_handle.close()
         assembly_record_summary = assembly_record_summary_set['DocumentSummarySet']['DocumentSummary'][0]
 

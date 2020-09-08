@@ -131,7 +131,7 @@ def get_assembly_document(record_id):
     try:
         #get information on assembly for the specific assembly accession
         assembly_record_summary_handle = Entrez.esummary(db="assembly", id=record_id)
-        result = Entrez.read(assembly_record_summary_handle)
+        result = Entrez.read(assembly_record_summary_handle, validate = False)
         assembly_record_summary_handle.close()
 
         #extract assembly record summary for ftp path later

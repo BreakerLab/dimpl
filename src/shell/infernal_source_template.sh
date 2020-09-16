@@ -2,7 +2,7 @@
 module load Infernal
 
 # Replace with the path to the downloaded microbial igr database
-DATABASE=/gpfs/ysm/pi/breaker/data/refseq98/s50.igr.fasta
+DATABASE=/gpfs/gibbs/pi/breaker/data/refseq98/s50.igr.fasta
 
 #################################
 # Do not modify below this line

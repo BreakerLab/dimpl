@@ -1,5 +1,5 @@
 # Replace path below with the location of the cmfinder executables on your compute cluster
-export PATH=$PATH:/ysm-gpfs/pi/breaker/software/packages/cmfinder-0.4.1.18/bin
+export PATH=$PATH:/gpfs/gibbs/pi/breaker/software/packages/cmfinder-0.4.1.18/bin
 
 #################################
 # Do not modify below this line

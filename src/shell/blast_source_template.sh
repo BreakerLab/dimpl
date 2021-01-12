@@ -1,11 +1,7 @@
 #!/bin/bash
 
-# Replace the line below with the path to the blast sequence database on your cluster 
-export BLASTDB=/ysm-gpfs/datasets/db/blast
-# If your cluster doesn't use `module load` replace with the necessary command to import Blast command line utils
-module load BLAST+
+# Pull in variables and set up necessary executables
+source scripts/cluster.conf
 
-#################################
-# Do not modify below this line
-#################################
+export BLASTDB
 BLASTCMD="blastx -evalue 0.01 -outfmt 5 -db nr -query"

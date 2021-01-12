@@ -1,18 +1,13 @@
 #!/bin/bash
 
-# If your cluster doesn't use `module load`, add dSQ utils to path
-module load dSQ
-# Replace with the slurm partition your jobs will be run in
-PARTITION=pi_breaker
-
-#################################
-# Do not modify below this line
-#################################
 thiscmd=`realpath $0`
 parent_dir="$(dirname $thiscmd)"
 mkdir -p $parent_dir/output
 infernal_batchfile="$parent_dir/scripts/${STEPNAME}_infernal_batchfile.sh"
 infernal_jobfile="$parent_dir/scripts/${STEPNAME}_infernal_jobfile.sh"
+
+# Pull in variables and set up necessary executables
+source $parent_dir/scripts/cluster.conf
 
 echo "Generating infernal batchfile at $infernal_batchfile"
 dSQ.py --jobfile $infernal_jobfile --batch-file $infernal_batchfile -t 1-0\

@@ -39,7 +39,7 @@ The DIMPL discovery pipeline enables rapid extraction and selection of bacterial
 
 3. Configure docker to grant containers access to the folder where the DIMPL repository is located
 
-4. Modify the script template files found at dimpl/src/shell/*_template.sh with the database locations and appropriate commands for importing utilities on your cluster. 
+4. Modify the configuration file found at dimpl/src/shell/cluster.conf with the database locations and appropriate commands for importing utilities on your cluster. 
 
 5. Run `./start.sh` in the main repository directory. Follow the first-time configuration instructions (asks for email and NCBI API key).
 
@@ -52,26 +52,28 @@ The DIMPL notebooks generate compressed .tar.gz files consisting of all the scri
 ### File Organization
 ------------
 
-    ├── .env               <- File generated during configuration step of start.sh
+    ├── .env                    <- File generated during configuration step of start.sh
     ├── LICENSE
-    ├── README.md          <- This document
-    ├── start.sh           <- Script to perform initial configuration and start the docker container
+    ├── README.md               <- This document
+    ├── start.sh                <- Script to perform initial configuration and start the docker container
     ├── data
-    │   ├── export         <- Where DIMPL places data and bash script tar.gz files  
-    │   ├── import         <- Where to place re-compressed tar.gz files that have been run on a compute cluster
-    │   ├── interim        <- Where processed genomic data is stored during analysis
-    │   └── raw            <- The original genomic data.
+    │   ├── export              <- Where DIMPL places data and bash script tar.gz files  
+    │   ├── import              <- Where to place re-compressed tar.gz files that have been run on a compute cluster
+    │   ├── interim             <- Where processed genomic data is stored during analysis
+    │   └── raw                 <- The original genomic data.
     │
-    ├── docs               <- Sphinx documentation for DIMPL
+    ├── docs                    <- Sphinx documentation for DIMPL
     │
-    ├── notebooks          <- Jupyter notebooks for the various steps of DIMPL
+    ├── notebooks               <- Jupyter notebooks for the various steps of DIMPL
     │   ├── 1-Genome-IGR-Selection.ipynb    <- 
     │   ├── 2-BLAST-Processing.ipynb        <- 
     │   ├── 3-IGR-Report.ipynb              <- 
     │   └── 4-Motif-Refinement.ipynb        <- 
     │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-    │                         generated with `pip freeze > requirements.txt`
+    ├── requirements.txt        <- The requirements file for reproducing the analysis environment, e.g.
+    │                              generated with `pip freeze > requirements.txt`
     │
-    ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
-    └── src                <- Source code for use in this project.
+    ├── setup.py                <- makes project pip installable (pip install -e .) so src can be imported
+    └── src                     <- Source code for use in this project.
+        └── shell               <- The original genomic data.
+            └── cluster.conf    <- Configuration file for the compute environment.

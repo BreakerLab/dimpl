@@ -215,6 +215,7 @@ def save_selected_IGRs(interactive_plot, annotated_df, genome):
     if not os.path.exists(output_folder + '/scripts'):
         os.makedirs(output_folder + '/scripts')
 
+    shutil.copy('src/shell/cluster.conf', '{}/scripts'.format(output_folder))
     shutil.copy('src/shell/blast_source_template.sh', '{}/scripts/blast_source.sh'.format(output_folder))
     shutil.copy('src/shell/blast_run_template.sh', '{}/blast_run.sh'.format(output_folder))
 

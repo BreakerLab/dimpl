@@ -1,12 +1,6 @@
-# If your cluster doesn't use `module load` replace with the necessary command to import Infernal command line utils
-module load Infernal
+# Pull in variables and set up necessary executables
+source scripts/cluster.conf
 
-# Replace with the path to the downloaded microbial igr database
-DATABASE=/gpfs/gibbs/pi/breaker/data/refseq98/s50.igr.fasta
-
-#################################
-# Do not modify below this line
-#################################
 SEQDIR=$STEPNAME/$SEQNAME
 CMBUILDCOMMAND="cmbuild -F $NOSS -o $SEQDIR/$SEQNAME.out  $SEQDIR/$SEQNAME.cm  $SEQDIR/$SEQNAME.sto"
 CMCALIBRATECOMMAND="cmcalibrate  $SEQDIR/$SEQNAME.cm"

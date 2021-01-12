@@ -1,9 +1,6 @@
-# Replace path below with the location of the cmfinder executables on your compute cluster
-export PATH=$PATH:/gpfs/gibbs/pi/breaker/software/packages/cmfinder-0.4.1.18/bin
+# Pull in variables and set up necessary executables
+source scripts/cluster.conf
 
-#################################
-# Do not modify below this line
-#################################
 SEQDIR=$STEPNAME/$SEQNAME
 if [ -f $SEQDIR/NO_HITS_FOUND ]; then echo "CMfinder did not need to run because prior CMsearch returned no hits."; exit; fi
 BASECOMMAND="cmfinder04.pl -s1 7 -s2 7 -combine -fragmentary -skipClustalw -motifList $SEQDIR/motif.list --allCpus -commaSepEmFlags x--filter-non-frag,--max-degen-per-hit,2,--max-degen-flanking-nucs,7,--degen-keep,--amaa"

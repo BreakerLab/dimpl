@@ -17,6 +17,7 @@ import string
 from itertools import compress
 import genomeview
 from src.shell.gff2bed import convert
+import re
 
 Entrez.email = os.environ.get("ENTREZ_EMAIL")
 Entrez.api_key = os.environ.get("ENTREZ_APIKEY")
@@ -394,7 +395,7 @@ def run_rscape(outdir, sto_filename, fold=True, output=True):
     display(SVG(filename=svg_filename))
     
 def tar_subdir_members(tar, import_tar_name):
-    tar_foldername = '.'.join(import_tar_name.split('/')[-1].split('.')[:-2]) + '/'
+    tar_foldername = re.sub(r'(\.done)*\.tar\.gz','',import_tar_name.split('/')[-1]) + '/'
     tar_foldername_length = len(tar_foldername)
     for member in tar.getmembers():
         if member.path.startswith(tar_foldername):

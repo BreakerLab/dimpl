@@ -1,4 +1,4 @@
 *.tar.gz
-!Francisella_tularensis_GCA_000008985.1_selection_0.5_2.0_-2.0_blastdata.tar.gz
-!Francisella_tularensis_GCA_000008985.1_selection_0.5_2.0_-2.0_infernal_step1.tar.gz
-!riboswitch_candidates_infernal_step2.tar.gz
+!Francisella_tularensis_GCA_000008985.1_selection_0.5_2.0_-2.0_blastdata.done.tar.gz
+!Francisella_tularensis_GCA_000008985.1_selection_0.5_2.0_-2.0_infernal_step1.done.tar.gz
+!riboswitch_candidates_infernal_step2.done.tar.gz

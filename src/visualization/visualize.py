@@ -216,6 +216,7 @@ def save_selected_IGRs(interactive_plot, annotated_df, genome):
         os.makedirs(output_folder + '/scripts')
 
     shutil.copy('src/shell/cluster.conf', '{}/scripts'.format(output_folder))
+    shutil.copy('src/shell/make_tar.sh', '{}/scripts'.format(output_folder))
     shutil.copy('src/shell/blast_source_template.sh', '{}/scripts/blast_source.sh'.format(output_folder))
     shutil.copy('src/shell/blast_run_template.sh', '{}/blast_run.sh'.format(output_folder))
 
@@ -232,5 +233,5 @@ def save_selected_IGRs(interactive_plot, annotated_df, genome):
 
     with tarfile.open("data/export/{}_{}_selection_{}_{}_{}_blastdata.tar.gz".format('_'.join(genome.scientific_name.split(' ')[0:2]), genome.assembly_acc, class_weight_mod, c_exp, gamma_exp), "w:gz") as tar:
         tar.add(output_folder, arcname="{}_{}_selection_{}_{}_{}_blastdata".format('_'.join(genome.scientific_name.split(' ')[0:2]), genome.assembly_acc, class_weight_mod, c_exp, gamma_exp))
-    
+        print("\nTarfile created:",tar.name)
     return

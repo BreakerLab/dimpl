@@ -23,6 +23,9 @@ def build_infernal_commands(data_dir, step_name, no_secondary_structure=False):
     # Copy the configuration file
     shutil.copy("src/shell/cluster.conf", "{}/scripts/".format(data_dir))
 
+    # Copy the tar helper utility
+    shutil.copy("src/shell/make_tar.sh", "{}/scripts/".format(data_dir))
+
     # Add the outdir variable to the infernal source file
     with open("src/shell/infernal_source_template.sh", 'r') as infernal_source_template:
         data = infernal_source_template.read()

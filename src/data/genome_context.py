@@ -326,16 +326,33 @@ def build_context_image(hit_row, alignment, upstream_range = 4000, downstream_ra
     convert(gff_file_zip,bed_file, desc_only=True)
 
     def prerender(renderer, element):
-        # prerenderers get run before the track is rendered
+        # Prerenderers get run before the track is rendered.
+        # Draw non-feature graphic elements.
+
+        # IGR is in forward orientation
         if start < stop:
             x1 = element.scale.topixels(start) # converting genomic coordinates to screen coordinates
             x2 = element.scale.topixels(stop)
-            yield from renderer.rect(x1, 0, x2-x1, element.height, fill="lightblue", stroke="none")
+            # Draw vertical hit bar
+            yield from renderer.rect(x1, 0, x2-x1, element.height-14, fill="lightblue", stroke="none")
+            # Add "HIT" text
+            yield from renderer.text(x1+(x2-x1)/2, element.height-2, "HIT", size=12, anchor="middle")
+            # Draw hit direction arrow (forward/positive stand)
+            yield from renderer.block_arrow(x1+(x2-x1)/2+16, element.height-11, 0, 9, arrow_width=9,
+                direction="right", fill="black", stroke="none")
+
+        # IGR is in reverse orientation
         if start > stop:
             x1 = element.scale.topixels(start) # converting genomic coordinates to screen coordinates
             x2 = element.scale.topixels(stop)
-            yield from renderer.rect(x1, 0, x1-x2, element.height, fill="lightblue", stroke="none")
-   
+            # Draw vertical hit bar
+            yield from renderer.rect(x2, 0, x1-x2, element.height-14, fill="lightblue", stroke="none")
+            # Add "HIT" text
+            yield from renderer.text(x1+(x2-x1)/2, element.height-2, "HIT", size=12, anchor="middle")
+            # Draw hit direction arrow (reverse/negative stand)
+            yield from renderer.block_arrow(x2+(x1-x2)/2-16, element.height-11, 0, 9, arrow_width=9,
+                direction="left", fill="black", stroke="none")
+
     doc=genomeview.visualize_data({"":bed_file},hit_accession,down_limit,up_limit)
     cur_track = genomeview.get_one_track(doc, "")
     cur_track.prerenderers = [prerender]

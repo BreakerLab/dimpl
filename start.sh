@@ -3,13 +3,14 @@
 # ##################################################
 # Script for starting docker environment for
 #
-version="1.0.0"               # Sets version variable
+version="1.0.1"               # Sets version variable
 #
 # Templated from https://github.com/natelandau/shell-scripts
 scriptTemplateVersion="1.3.0" # Version of scriptTemplate.sh that this script is based on
 
 #
 # 2019-05-20 DATE - v1.0.0  - First Creation
+# 2020-02-19 DATE - v1.0.1  - Added prompt for BL API Key
 #
 # ##################################################
 
@@ -134,6 +135,12 @@ input "Enter NCBI E-utils API Key (Recommended, allows faster requests from E-ut
 read ENTREZ_APIKEY
 if [[ ${ENTREZ_APIKEY} != "" ]]; then
     echo "ENTREZ_APIKEY=${ENTREZ_APIKEY}" >> .env
+fi
+
+input "Enter Breaker Lab API Key (Required for lab members, others can skip it): "
+read BL_APIKEY
+if [[ ${BL_APIKEY} != "" ]]; then
+    echo "BL_APIKEY=${BL_APIKEY}" >> .env
 fi
 
 seek_confirmation "Customize Rfam database location? (Used when running local copies of Rfam): "

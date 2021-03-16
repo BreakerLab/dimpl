@@ -229,7 +229,8 @@ def get_assembly_document(record_id):
 def find_seq_in_alignment(id, alignment):
     '''returns alignment sequence'''
     for seqrecord in alignment:
-        if seqrecord.id == id:
+        # Remove nn| prefix before doing comparison
+        if re.sub('^[0-9]+\|','',seqrecord.id) == id:
             s = str(seqrecord.seq)
             s = s.replace('.', '')
             s = s.replace('-', '')

@@ -9,8 +9,8 @@ import sys
 from Bio import SeqIO
 import configparser
 import subprocess
-from IPython.core.display import display, HTML, SVG
-from urllib.error import HTTPError
+from IPython.core.display import display, HTML, SVG, Markdown
+from urllib.error import HTTPError, URLError
 import time
 from Bio import AlignIO
 import string
@@ -18,10 +18,81 @@ from itertools import compress
 import genomeview
 from src.shell.gff2bed import convert
 import re
+import base64
+from dotenv import load_dotenv, find_dotenv
+
+# Load OS environment variables from ".env" file.
+dotenv_path = find_dotenv()
+load_dotenv(dotenv_path,override=True)
 
 Entrez.email = os.environ.get("ENTREZ_EMAIL")
 Entrez.api_key = os.environ.get("ENTREZ_APIKEY")
+Entrez.sleep_between_tries = 1
 
+# Breaker Lab Environmental Dataset - requires Yale VPN access
+BL_url_top = "http://bl.biology.yale.edu/lab/scripts"
+BL_api = BL_url_top + "/" + "dimpl_api.pl"
+BL_user = "Dimpl_api"
+BL_api_key = os.environ.get("BL_APIKEY")
+
+# A tidy (no traceback) way of stopping after a trapped error has been handled.
+# Use "raise StopException".
+class StopExecution(Exception):
+    def _render_traceback_(self):
+        pass
+
+def init_environmentals_api():
+    '''
+    setup digest authentication for Breaker Lab server access
+    '''
+    global BLaccess
+    
+    if not BL_api_key:
+        BLaccess = False
+        return
+    
+    # Create an authentication manager
+    password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+    
+    # Parse API key
+    try:
+        apikey = base64.standard_b64decode(BL_api_key[::-1]+'==').rstrip().decode('utf-8')
+        digestauth = base64.standard_b64decode(apikey.split()[1][::-1]+'==').rstrip().decode('utf-8')
+        keyuser = base64.standard_b64decode(apikey.split()[2]+'==').rstrip().decode('utf-8')
+        #print("Authenticated Breaker Lab User:",keyuser)
+    except UnicodeDecodeError:
+        print("BL API key error.  Check for typo or acquire a new key.")
+        print("    key=",BL_api_key)
+        raise StopExecution
+    
+    # Add digest credentials to the password manager
+    password_mgr.add_password(None, BL_url_top, BL_user, digestauth)
+
+    handler = urllib.request.HTTPDigestAuthHandler(password_mgr)
+
+    # create "opener" (OpenerDirector instance)
+    global opener
+    opener = urllib.request.build_opener(handler)
+
+    # Check if Breaker Lab server is accessible
+    try:
+        opener.open(BL_api)
+    except HTTPError as e:
+        if e.code == 443:
+            #print("BL server found.")
+            BLaccess = True
+
+            # Install the opener.
+            # Now all calls to urllib.request.urlopen use our opener.
+            urllib.request.install_opener(opener)
+        else:
+            print("ERROR: BL server access problem:",e)
+            raise StopExecution
+    except URLError as e:
+        print("BL server not found.",e)
+        BLaccess = False
+        raise StopExecution
+        
 def get_nuccore_id(hit_accession):
     '''
     get the nuccore id of the hit by searching the nuccore database with the hit accession
@@ -31,9 +102,14 @@ def get_nuccore_id(hit_accession):
         nuccore_search_handle = Entrez.esearch(term=hit_accession, field='ACCN', db='nuccore')
         result = Entrez.read(nuccore_search_handle)
         nuccore_search_handle.close()
-        nuccore_id = result['IdList'][0]
-
-        return nuccore_id
+    
+        # Check if an empty set is returned
+        if(result['IdList']):
+            nuccore_id = result['IdList'][0]
+            return nuccore_id
+        else:
+            # print(result['WarningList']['OutputMessage'])
+            return "NOT FOUND"
     
     except HTTPError as e:
         if(e.code == 429):
@@ -86,7 +162,7 @@ def fetch_deprecated_record_id(nuccore_id):
     except HTTPError as e:
         if(e.code == 429):
             time.sleep(0.5)
-            return get_nuccore_id(hit_accession)
+            return fetch_deprecated_record_id(nuccore_id)
         else:
             raise
 
@@ -146,22 +222,26 @@ def get_assembly_document(record_id):
             return get_assembly_document(record_id)
         else:
             raise
+    except IndexError:
+        time.sleep(0.5)
+        return get_assembly_document(record_id)
 
 def find_seq_in_alignment(id, alignment):
     '''returns alignment sequence'''
     for seqrecord in alignment:
-        if seqrecord.id == id:
+        # Remove nn| prefix before doing comparison
+        if re.sub('^[0-9]+\|','',seqrecord.id) == id:
             s = str(seqrecord.seq)
             s = s.replace('.', '')
             s = s.replace('-', '')
             return s
     raise ValueError("Cannot find SeqRecord ID {} in alignment file. If the previous location can't be found in your results table try deleting the cached *results.csv file".format(id))
 
-def get_taxonomy(nuccore_id):
-    
+def get_taxonomy(tax_id):
+    '''
+    returns lineage given a tax_id
+    '''
     try:
-        record_id = get_assembly_link(nuccore_id)
-        tax_id = get_assembly_document(record_id)['Taxid']
         taxonomy_info_handle= Entrez.efetch(db = 'taxonomy', id = tax_id, retmode = 'xml')
         result = Entrez.read(taxonomy_info_handle)
         taxonomy_info_handle.close()
@@ -170,61 +250,74 @@ def get_taxonomy(nuccore_id):
     except HTTPError as e:
         if(e.code == 429):
             time.sleep(0.5)
-            return get_taxonomy(nuccore_id)
+            return get_taxonomy(tax_id)
         else:
             raise
 
-def download_gff_fna(hit_accession):
+def download_gff(hit_row):
     '''
-    downloads the gff and fasta files for the hit accession
+    downloads a gff file for the hit accession
     returns filename
     '''
+    hit_accession = hit_row.target_name
     
-    #get link to assembly record 
-    nuccore_id = get_nuccore_id(hit_accession)
-    record_id = get_assembly_link(nuccore_id)
-
-    #get document information of assembly record
-    assembly_record_summary = get_assembly_document(record_id)
-
-    #get assembly information
-    assembly_accn = assembly_record_summary['AssemblyAccession']
-    assembly_name = assembly_record_summary['AssemblyName']
-    
-    # Pull the FTP path from the assembly record summary.
-    ftp_path = assembly_record_summary['FtpPath_RefSeq'] + ''
-    base_filename = ftp_path[ftp_path.rfind("/") + 1:]
-
     output_folder= "data/raw/download"
     #if the output folder doesn't exist, create it, in the directory
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     
-    #create filenames for the gff and fasta files
-    refseq_gff_zip_filename = "data/raw/download/{}_genomic.gff.gz".format(base_filename)
-    refseq_fasta_zip_filename = "data/raw/download/{}_genomic.fna.gz".format(base_filename)
+    #get link to assembly record 
+    nuccore_id = get_nuccore_id(hit_accession)
+    found_on_refseq = (nuccore_id != 'NOT FOUND')
+
+    if found_on_refseq:
+        record_id = get_assembly_link(nuccore_id)
     
-    if not os.path.isfile(refseq_gff_zip_filename):
+        #get document information of assembly record
+        assembly_record_summary = get_assembly_document(record_id)
 
-        # Build the full path to the genomic gff/fna files
-        refseq_gff_zip_ftp_path = "{}/{}_genomic.gff.gz".format(ftp_path, base_filename)
-        refseq_fasta_zip_ftp_path = "{}/{}_genomic.fna.gz".format(ftp_path, base_filename)
+        #get assembly information
+        hit_row.tax_id = assembly_record_summary['Taxid']
+        
+        # Pull the FTP path from the assembly record summary.
+        ftp_path = assembly_record_summary['FtpPath_RefSeq'] + ''
+        base_filename = ftp_path[ftp_path.rfind("/") + 1:]
+    else:
+        base_filename = 'ENV_'+hit_accession
+        # Use Taxonomy ID for "metegenome".
+        hit_row.tax_id = 256318
 
-        #create gff/fna files
-        with open(refseq_gff_zip_filename, 'wb') as refseq_gff_zip_file:
+    # Create filename for the gff file
+    refseq_gff_zip_filename = "{}/{}_genomic.gff.gz".format(output_folder,base_filename)
+
+    if not (os.path.isfile(refseq_gff_zip_filename) and os.path.getsize(refseq_gff_zip_filename) > 0):
+        if found_on_refseq:           
+            # Build the full path to the genomic gff file
+            refseq_gff_zip_ftp_path = "{}/{}_genomic.gff.gz".format(ftp_path, base_filename)
+
+        elif BLaccess:
+            #If not found at NCBI, and we have BL access, do an environmental lookup
+            url = 'http://bl.biology.yale.edu/lab2/scripts/dimpl_dev.pl'
+            values = {'accno' : hit_accession, 'gzip' : '1'}
+            data = urllib.parse.urlencode(values).encode('ascii')
+            refseq_gff_zip_ftp_path = urllib.request.Request(url, data)
+        else:
+            print("Accession number",hit_accession,"not found on NCBI Entrez")
+            return 'ERROR'
+                
+        # Create gff file
+        # Do the web request before creating a file
+        try:
             request_gff = urllib.request.urlopen(refseq_gff_zip_ftp_path)
-
+        except HTTPError as e:
+            if e.code == 404 or e.code == 444:
+                return base_filename + ' - NOT FOUND'
+            elif e.code == 445:
+                return base_filename + ' - NO FEATURES FOUND'
+                
+        with open(refseq_gff_zip_filename, 'wb') as refseq_gff_zip_file:
             #copy the content of source file to destination file.
             shutil.copyfileobj(request_gff, refseq_gff_zip_file)
-
-        with open(refseq_fasta_zip_filename, 'wb') as refseq_fasta_zip_file:
-            request_fasta = urllib.request.urlopen(refseq_fasta_zip_ftp_path)
-            shutil.copyfileobj(request_fasta, refseq_fasta_zip_file)
-
-
-        # Build the full path to the UNZIPPED genomic gff/fna files
-        refseq_gff_ftp_path_unzip = "{}/{}_genomic.gff".format(ftp_path, base_filename)
-        refseq_fasta_ftp_path_unzip = "{}/{}_genomic.fasta".format(ftp_path, base_filename)
 
         #unzip gff.gz file and save as .gff file
         input_gff = gzip.GzipFile(refseq_gff_zip_filename, 'rb')
@@ -234,16 +327,7 @@ def download_gff_fna(hit_accession):
         output_gff = open("data/raw/download/{}_genomic.gff".format(base_filename), 'wb')
         output_gff.write(s_gff)
         output_gff.close()
-
-        #unzip fna.gz file and save as .fna file
-        input_fna = gzip.GzipFile(refseq_fasta_zip_filename, 'rb')
-        s_fna = input_fna.read()
-        input_fna.close()
-
-        output_fna = open("data/raw/download/{}_genomic.fna".format(base_filename), 'wb')
-        output_fna.write(s_fna)
-        output_fna.close()
-        
+       
     return base_filename
 
 def build_context_image(hit_row, alignment, upstream_range = 4000, downstream_range = 4000):
@@ -262,10 +346,10 @@ def build_context_image(hit_row, alignment, upstream_range = 4000, downstream_ra
     flip_val = 'false'
     if(strand == "-"):
         flip_val = 'true'
-
+    
     #get the assembly accession of the hit and download the fasta and gff files
     if hit_row.assembly_accession=='nan':
-        base_filename = download_gff_fna(hit_accession)
+        base_filename = download_gff(hit_row)
     else:
         base_filename = hit_row.assembly_accession
     
@@ -288,7 +372,8 @@ def build_context_image(hit_row, alignment, upstream_range = 4000, downstream_ra
     
     #extract taxonomy
     if  hit_row.lineage=='nan':
-        lineage = get_taxonomy(hit_accession)
+
+        lineage = get_taxonomy(hit_row.tax_id)
     else:
         lineage = hit_row.lineage
     
@@ -299,15 +384,18 @@ def build_context_image(hit_row, alignment, upstream_range = 4000, downstream_ra
     #print statements for variables to be shown in image
 
     print("Match #{}".format(int(hit_row.name)+1))
-    print("E-value: "+ str(e_value))
-    print("%GC: "+ str(percent_gc))
-    print("Score: "+ str(score))
-    print("Genome Assembly: " +str(base_filename))
-    print("Target: "+ target_name)
-    print("Lineage: " + lineage)
-    print("Matched Sequence: "+target_sequence)
+    print("E-value:          " + str(e_value))
+    print("%GC:              " + str(percent_gc))
+    print("Score:            " + str(score))
+    print("Target:           " + target_name)
+    print("Genome Assembly:  " + str(base_filename))
+    print("Lineage:          " + lineage)
+    print("Matched Sequence: " + target_sequence)
 
-   
+    #skip browser link and context graph when there is no bed file found
+    if 'NO FEATURES' in base_filename or 'NOT FOUND' in base_filename or 'ERROR' in base_filename:
+        return ('nan','nan')
+    
     #clickable link
     genome_browser_url ='https://www.ncbi.nlm.nih.gov/projects/sviewer/?id={}&v={}:{}&c=FF6600&theme=Details&flip={}&select=null&content=3&color=0&label=1&geneModel=0&decor=0&layout=0&spacing=0&alncolor=on&m={},{}&mn=5,3'.format(hit_accession, down_limit, up_limit, flip_val, start, stop)   
     try:
@@ -347,11 +435,13 @@ def build_context_image(hit_row, alignment, upstream_range = 4000, downstream_ra
 
 def get_all_images(results_csv_filename, alignment):
 
+    init_environmentals_api()
     results_df = pd.read_csv(results_csv_filename, index_col=0)
     results_df['lineage'] = results_df['lineage'].astype(str)
     results_df['assembly_accession'] = results_df['assembly_accession'].astype(str)
     updated_results_df = results_df.copy(deep=True)
     for index, row in results_df.iterrows():
+        display(Markdown('---'))
         assembly_accession, lineage = build_context_image(row, alignment, upstream_range = 4000, downstream_range = 4000)
         updated_results_df.loc[index, 'lineage'] = lineage
         updated_results_df.loc[index, 'assembly_accession'] = assembly_accession

@@ -13,11 +13,11 @@ The DIMPL discovery pipeline enables rapid extraction and selection of bacterial
 
 #### For Compute Cluster
 
-* [Infernal](http://eddylab.org/infernal/)
-* [BLAST+](https://www.ncbi.nlm.nih.gov/books/NBK279680/)
-* [CMfinder](https://sourceforge.net/projects/weinberg-cmfinder/)
-* [Dead Simple Queue](https://github.com/ycrc/dSQ)
-* [Slurm](https://slurm.schedmd.com/quickstart.html)
+* [Infernal v1.1.4](http://eddylab.org/infernal/)
+* [BLAST+ v2.11.0+](https://www.ncbi.nlm.nih.gov/books/NBK279680/)
+* [CMfinder v0.4.1.18+](https://sourceforge.net/projects/weinberg-cmfinder/)
+* [Dead Simple Queue v1.05+](https://github.com/ycrc/dSQ)
+* [Slurm v20.02+](https://slurm.schedmd.com/quickstart.html)
 
 ### Quick-start
 
@@ -29,9 +29,10 @@ The DIMPL discovery pipeline enables rapid extraction and selection of bacterial
 
 #### Local Configuration
 
-1. Clone the repository (into any folder on drive - i.e. User/git). Cloning will create a folder called dimpl.
+1. Download the source code (into any folder on drive)
 
-`git clone github.com/breakerlab/dimpl`
+`wget https://github.com/BreakerLab/dimpl/archive/v1.0.1.tar.gz`
+`tar xzvf v1.0.1.tar.gz`
 
 2. Download the docker image. 
 

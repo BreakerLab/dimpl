@@ -2,11 +2,10 @@ version: '3'
 
 services:
   notebook:
-    image: breakerlab/dimpl
+    image: breakerlab/dimpl:v1.0.1
     ports:
       - 8888:8888
     environment:
-      - JUPYTER_ENABLE_LAB=1
       - GRANT_SUDO=yes
     volumes:
       - ./:/home/jovyan/work

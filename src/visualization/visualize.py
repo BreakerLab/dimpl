@@ -46,6 +46,8 @@ def graph_layout(genome):
                        hovermode='closest',
                        legend=dict(y=0.5, x=1.05, borderwidth=2),
                        height=600,
+                       autosize=False,
+                       margin=dict(autoexpand=False,l=75,r=250,b=100,t=100,pad=5),
                        plot_bgcolor="white",paper_bgcolor='white')
 
     return layout

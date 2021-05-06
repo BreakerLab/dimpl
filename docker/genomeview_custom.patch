@@ -5,21 +5,21 @@ Subject: [PATCH] Glenn Gaffield modifications
 
 ---
  __init__.py      | 13 +++++++------
- axis.py          |  3 ++-
  bedtrack.py      | 55 +++++++++++++++++++++++++++++++++++++++----------------
  genomeview.py    |  3 ++-
+ intervaltrack.py |  1 +
  svg.py           |  3 ++-
  5 files changed, 51 insertions(+), 24 deletions(-)
 
 diff --git a/__init__.py b/__init__.py
-index 5a29ee8..cbd87f6 100644
+index 5a29ee8..cbd87f6 100755
 --- a/__init__.py
 +++ b/__init__.py
 @@ -5,14 +5,15 @@ from genomeview.genomesource import *
  
  try:
      from genomeview._quickconsensus import *
--except ImportError:
+-except ValueError:
 -    import logging
 -    logging.warn("Unable to load cythonized quickconsensus module; "
 -                 "drawing reads using quick consensus mode will be "
@@ -37,55 +37,11 @@ index 5a29ee8..cbd87f6 100644
      logging.error("Unable to load cythonized quickconsensus module; "
                    "this is likely because pysam has been updated "
                    "since genomeview was originally install. To "
-diff --git a/genomeview.py b/genomeview.py
-index 748239b..81a59c2 100644
---- a/genomeview.py
-+++ b/genomeview.py
-@@ -5,7 +5,8 @@ from genomeview.svg import Renderer, SVG
- 
- 
- class Document:
--    header = """<svg version="1.1" baseProfile="full" width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">"""
-+    #GG header = """<svg version="1.1" baseProfile="full" width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">"""
-+    header = """<svg version="1.1" baseProfile="full" width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">"""
-     footer = """</svg>"""
-         
-     def __init__(self, width):
-diff --git a/svg.py b/svg.py
-index fd69227..aa2d5a4 100644
---- a/svg.py
-+++ b/svg.py
-@@ -19,7 +19,8 @@ class SVG(GraphicsBackend):
-     def text(self, x, y, text, size=10, anchor="middle", family="Helvetica", **kwdargs):
-         defaults = {}
-         assert anchor in ["start", "middle", "end"]
--        yield """<text x="{x:.2f}" y="{y:.2f}" font-size="{size}" font-family="{family}" text-anchor="{anchor}" {more}>{text}</text>""".format(
-+        #GG yield """<text x="{x:.2f}" y="{y:.2f}" font-size="{size}" font-family="{family}" text-anchor="{anchor}" {more}>{text}</text>""".format(
-+        yield """<a xlink:href="https://www.ncbi.nlm.nih.gov/protein/YP_034512.1" target="_blank"><text x="{x:.2f}" y="{y:.2f}" font-size="{size}" font-family="{family}" text-anchor="{anchor}" {more}>{text}</text></a>""".format(
-             x=x, y=y, size=size, family=family, anchor=anchor, more=_addOptions(kwdargs, defaults), text=text)
- 
-     def text_with_background(self, x, y, text, size=10, anchor="middle", text_color="black", bg="white", bg_opacity=0.8, **kwdargs):
-diff --git a/axis.py b/axis.py
-index fd69227..aa2d5a4 100644
---- a/axis.py
-+++ b/axis.py
-@@ -72,9 +72,9 @@
-     for i in range(int(roundStart), end, res):
-         res_digits = math.log10(res)
-         if res_digits >= 6:
--            label = "{}mb".format(i / 1e6)
-+            label = "{}mb".format(int(i / 1e6))
-         elif res_digits >= 3:
--            label = "{:,}kb".format(i / 1e3)
-+            label = "{:,}kb".format(int(i / 1e3))
-         else:
-             label = "{:,}".format(i)
-
 diff --git a/bedtrack.py b/bedtrack.py
-index 048b7a6..7d90013 100644
+index 048b7a6..7d90013 100755
 --- a/bedtrack.py
 +++ b/bedtrack.py
-@@ -41,6 +41,8 @@
+@@ -41,6 +41,8 @@ def tx_from_bedfields(bedfields):
      name = coding_start = coding_end = exons = color = None
      strand = "+"
  
@@ -94,7 +50,7 @@ index 048b7a6..7d90013 100644
      if len(bedfields) >= 4:
          name = bedfields[3]
      if len(bedfields) >= 6:
-@@ -106,7 +108,8 @@
+@@ -106,7 +108,8 @@ def fetch_from_bigbed(path, chrom, start, end):
  def fetch_from_plainbed(path, chrom, start, end):
      found_chrom = False
      for line in open(path):
@@ -104,7 +60,7 @@ index 048b7a6..7d90013 100644
          if fields[0] != chrom: continue
          found_chrom = True
  
-@@ -135,8 +138,10 @@
+@@ -135,8 +138,10 @@ class BEDTrack(IntervalTrack):
          self.draw_locus_labels = True
          self.include_locus_fn = None
  
@@ -117,7 +73,7 @@ index 048b7a6..7d90013 100644
          self.thin_width = 5
          self.thinnest_width = 1
  
-@@ -171,10 +176,11 @@
+@@ -171,10 +176,11 @@ class BEDTrack(IntervalTrack):
      def draw_interval(self, renderer, interval):
          # print(interval)
          interval_pixel_width = self.scale.relpixels(interval.tx.end-interval.tx.start)
@@ -133,7 +89,7 @@ index 048b7a6..7d90013 100644
                      
          # print(1)
          row = self.intervals_to_rows[interval.id]
-@@ -214,7 +220,8 @@
+@@ -214,7 +220,8 @@ class BEDTrack(IntervalTrack):
  
          # Draw the "exons", both thin (non-coding/UTR) and thick (coding)
          # print(interval, tx.exons)
@@ -143,7 +99,7 @@ index 048b7a6..7d90013 100644
              for cur_start, cur_end in tx.exons:
                  if which == "thick":
                      cur_y = top
-@@ -227,11 +234,13 @@
+@@ -227,11 +234,13 @@ class BEDTrack(IntervalTrack):
                      cur_start = max(tx.coding_start, cur_start)
                      cur_end = min(tx.coding_end, cur_end)
                  else:
@@ -161,7 +117,7 @@ index 048b7a6..7d90013 100644
  
                  cur_start = self.scale.topixels(cur_start)
                  cur_end = self.scale.topixels(cur_end)
-@@ -241,12 +250,42 @@
+@@ -241,12 +250,26 @@ class BEDTrack(IntervalTrack):
                      cur_start -= self.min_exon_width / 2
                      width = self.min_exon_width
  
@@ -185,27 +141,53 @@ index 048b7a6..7d90013 100644
          if interval.label is not None:
              end = self.scale.topixels(interval.end)
 +            end+= 5 if interval.strand=="+" else 0    #GG
-+
-+            #GG yield from renderer.text(end+self.label_distance, top+self.row_height-2, interval.label, anchor="start")
-+            start = self.scale.topixels(interval.start)
-+
-+            #GG prevent truncation of label on left side of image
-+            if start < 0:
-+                start = 0
  
 -            yield from renderer.text(end+self.label_distance, top+self.row_height-2, interval.label, anchor="start")
 -        
 \ No newline at end of file
-+            #GG prevent label truncation on the right side of image
-+            # calculate an approximation of the rendered length
-+            arr=[4.3,4.3,5.45,8.5,8.5,19.5,10.15,3.0,5.15,5.15,6.0,8.9,4.3,5.15,4.3,4.3,8.5,7.45,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,4.3,4.3,8.9,8.9,8.9,8.5,15.35,10.15,10.15,11.0,11.0,10.15,9.3,11.8,11.0,4.3,7.45,10.15,8.5,12.65,11.0,11.8,10.15,11.8,11.0,10.15,9.3,11.0,10.15,14.3,10.15,10.15,9.3,4.3,4.3,4.3,7.20,8.5,5.15,8.5,8.5,7.45,8.5,8.5,4.0,8.5,8.5,3.45,3.45,7.45,3.45,12.65,8.5,8.5,8.5,8.5,5.15,7.45,4.3,8.5,7.45,11.0,7.45,7.45,7.45,5.15,4.0,5.15,8.9]
-+
-+            label_len=0
-+            for i, ch in enumerate(interval.label):
-+                label_len += arr[ord(ch)-32] * 0.6666667
-+
-+            if start + label_len >= 892:
-+                start = 892 - label_len
-+
++            #GG yield from renderer.text(end+self.label_distance, top+self.row_height-2, interval.label, anchor="start")
++            start = self.scale.topixels(interval.start)
 +            yield from renderer.text(start, top+self.row_height-5, interval.label, anchor="start")
-+
++        
+diff --git a/genomeview.py b/genomeview.py
+index 748239b..81a59c2 100755
+--- a/genomeview.py
++++ b/genomeview.py
+@@ -5,7 +5,8 @@ from genomeview.svg import Renderer, SVG
+ 
+ 
+ class Document:
+-    header = """<svg version="1.1" baseProfile="full" width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">"""
++    #GG header = """<svg version="1.1" baseProfile="full" width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">"""
++    header = """<svg version="1.1" baseProfile="full" width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">"""
+     footer = """</svg>"""
+         
+     def __init__(self, width):
+diff --git a/intervaltrack.py b/intervaltrack.py
+index 01bb4f9..d5b89e6 100755
+--- a/intervaltrack.py
++++ b/intervaltrack.py
+@@ -96,6 +96,7 @@ class IntervalTrack(Track):
+         arrow_width = min(self.row_height / 2, self.margin_x * 0.7, self.scale.relpixels(30))
+         direction = "right" if interval.strand=="+" else "left"
+ 
++        #print("rendered block arrow")
+         yield from renderer.block_arrow(start, top, end-start, self.row_height, 
+             arrow_width=arrow_width, direction=direction,
+             fill=color, **{"stroke":"none", "id":temp_label})
+diff --git a/svg.py b/svg.py
+index fd69227..aa2d5a4 100755
+--- a/svg.py
++++ b/svg.py
+@@ -19,7 +19,8 @@ class SVG(GraphicsBackend):
+     def text(self, x, y, text, size=10, anchor="middle", family="Helvetica", **kwdargs):
+         defaults = {}
+         assert anchor in ["start", "middle", "end"]
+-        yield """<text x="{x:.2f}" y="{y:.2f}" font-size="{size}" font-family="{family}" text-anchor="{anchor}" {more}>{text}</text>""".format(
++        #GG yield """<text x="{x:.2f}" y="{y:.2f}" font-size="{size}" font-family="{family}" text-anchor="{anchor}" {more}>{text}</text>""".format(
++        yield """<a xlink:href="https://www.ncbi.nlm.nih.gov/protein/YP_034512.1" target="_blank"><text x="{x:.2f}" y="{y:.2f}" font-size="{size}" font-family="{family}" text-anchor="{anchor}" {more}>{text}</text></a>""".format(
+             x=x, y=y, size=size, family=family, anchor=anchor, more=_addOptions(kwdargs, defaults), text=text)
+ 
+     def text_with_background(self, x, y, text, size=10, anchor="middle", text_color="black", bg="white", bg_opacity=0.8, **kwdargs):
+-- 
+2.7.4

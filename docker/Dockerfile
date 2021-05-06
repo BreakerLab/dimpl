@@ -58,16 +58,15 @@ RUN ln -fs /opt/RNAstructure/exe/* /usr/local/bin/
 USER ${NB_USER}
 RUN rm /opt/conda/conda-meta/pinned
 RUN conda install --quiet --yes \
-    'ipywidgets=7.4' \
+    'ipywidgets>7.5' \
     'conda-forge::python-dotenv' \
-    'conda-forge::click' \
     'biopython' \
     'bioconda::bedops' \
     'bioconda::bx-python' \
     'bioconda::bedtools' \
     'bioconda::pybedtools' \
     'bioconda::pysam' \
-    'plotly::plotly=3.10.0' \
+    'plotly::plotly' \
     'plotly::plotly-orca' \
     'mysql-connector-python'  && \
     conda clean --all -f -y
@@ -82,16 +81,6 @@ RUN cd /opt/conda/lib/python3.7/site-packages/genomeview/ && \
 
 # Install Globus-cli
 RUN pip install globus-cli
-
-# Install any necessary Jupyter lab extensions
-RUN jupyter labextension install plotlywidget@0.11.0 --no-build && \
-    jupyter labextension install @jupyterlab/plotly-extension@0.18.2 --no-build && \
-    jupyter labextension install jupyterlab-chart-editor@1.1 --no-build && \
-    jupyter lab build && \
-    npm cache clean --force && \
-    rm -rf $CONDA_DIR/share/jupyter/lab/staging && \
-    rm -rf /home/$NB_USER/.cache/yarn && \
-    rm -rf /home/$NB_USER/.node-gyp
 
 USER root
 RUN fix-permissions $CONDA_DIR && \

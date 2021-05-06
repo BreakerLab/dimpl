@@ -235,6 +235,7 @@ def find_seq_in_alignment(id, alignment):
             s = s.replace('.', '')
             s = s.replace('-', '')
             return s
+    raise ValueError("Cannot find SeqRecord ID {} in alignment file. If the previous location can't be found in your results table try deleting the cached *results.csv file".format(id))
 
 def get_taxonomy(tax_id):
     '''
@@ -330,7 +331,6 @@ def download_gff(hit_row):
     return base_filename
 
 def build_context_image(hit_row, alignment, upstream_range = 4000, downstream_range = 4000):
-    
     #extract hit accession of target from hit_row
     hit_accession= hit_row.target_name
     

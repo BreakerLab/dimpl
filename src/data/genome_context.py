@@ -23,7 +23,10 @@ from dotenv import load_dotenv, find_dotenv
 
 # Load OS environment variables from ".env" file.
 dotenv_path = find_dotenv()
-load_dotenv(dotenv_path,override=True)
+if dotenv_path:
+    load_dotenv(dotenv_path,override=True)
+else:
+    print(".env file missing.  Did you run './start.sh --configure?'")
 
 Entrez.email = os.environ.get("ENTREZ_EMAIL")
 Entrez.api_key = os.environ.get("ENTREZ_APIKEY")
@@ -79,7 +82,7 @@ def init_environmentals_api():
         opener.open(BL_api)
     except HTTPError as e:
         if e.code == 443:
-            #print("BL server found.")
+            print("BL server found.")
             BLaccess = True
 
             # Install the opener.
@@ -104,7 +107,7 @@ def get_nuccore_id(hit_accession):
         nuccore_search_handle.close()
     
         # Check if an empty set is returned
-        if(result['IdList']):
+        if(result['IdList'] and result['IdList'][0] != hit_accession):
             nuccore_id = result['IdList'][0]
             return nuccore_id
         else:
@@ -136,14 +139,18 @@ def fetch_deprecated_record_id(nuccore_id):
         assembly_query_handle.close()
         assembly_record_ids = assembly_query_result["IdList"]
         
-        # Check to make sure a single record was returned, not multiple. Then save assembly record ID.
-        if len(assembly_record_ids) == 1:
+        # Check if at least one assembly was found
+        if not assembly_record_ids:
+            record_id = 'NOT FOUND'
+   
+            # Check to make sure a single record was returned, not multiple. Then save assembly record ID.
+        elif len(assembly_record_ids) == 1:
             record_id = assembly_record_ids[0]
    
         else:
             # Get summaries of the duplicate files
             summary_handle= Entrez.esummary(id=','.join(assembly_query_result['IdList']), db='assembly')
-            result = Entrez.read(summary_handle)
+            result = Entrez.read(summary_handle,validate=False)
             summary_handle.close()
             # Get a list of the assembly accessions
             accession_list = [document_summary['AssemblyAccession'] for document_summary in result['DocumentSummarySet']['DocumentSummary']]
@@ -158,7 +165,12 @@ def fetch_deprecated_record_id(nuccore_id):
                 record_id = result['DocumentSummarySet']['DocumentSummary'][index[0]].attributes['uid'] 
 
         return record_id
-        
+
+    # retry when data is incomplete
+    except http.client.IncompleteRead:
+        time.sleep(0.5)
+        return fetch_deprecated_record_id(nuccore_id)
+    
     except HTTPError as e:
         if(e.code == 429):
             time.sleep(0.5)
@@ -254,6 +266,16 @@ def get_taxonomy(tax_id):
         else:
             raise
 
+    # retry when data returned is empty
+    except IndexError as e:
+        time.sleep(0.5)
+        taxonomy_info_handle= Entrez.efetch(db = 'taxonomy', id = tax_id, retmode = 'xml')
+        result = Entrez.read(taxonomy_info_handle)
+        taxonomy_info_handle.close()
+        return result[0]['Lineage']
+    except:
+        return "NOT FOUND"
+
 def download_gff(hit_row):
     '''
     downloads a gff file for the hit accession
@@ -269,20 +291,28 @@ def download_gff(hit_row):
     #get link to assembly record 
     nuccore_id = get_nuccore_id(hit_accession)
     found_on_refseq = (nuccore_id != 'NOT FOUND')
+    assembly_found = False
 
     if found_on_refseq:
         record_id = get_assembly_link(nuccore_id)
-    
-        #get document information of assembly record
-        assembly_record_summary = get_assembly_document(record_id)
 
-        #get assembly information
-        hit_row.tax_id = assembly_record_summary['Taxid']
+        if record_id != 'NOT FOUND':
+            assemlbly_found = True
+
+            #get document information of assembly record
+            assembly_record_summary = get_assembly_document(record_id)
+
+            #get assembly information
+            hit_row.tax_id = assembly_record_summary['Taxid']
         
-        # Pull the FTP path from the assembly record summary.
-        ftp_path = assembly_record_summary['FtpPath_RefSeq'] + ''
-        base_filename = ftp_path[ftp_path.rfind("/") + 1:]
-    else:
+            # Pull the FTP path from the assembly record summary.
+            ftp_path = assembly_record_summary['FtpPath_RefSeq'] + ''
+            base_filename = ftp_path[ftp_path.rfind("/") + 1:]
+        else:
+            # could not find assembly
+            found_on_refseq = False
+
+    if not found_on_refseq:
         base_filename = 'ENV_'+hit_accession
         # Use Taxonomy ID for "metegenome".
         hit_row.tax_id = 256318
@@ -290,6 +320,7 @@ def download_gff(hit_row):
     # Create filename for the gff file
     refseq_gff_zip_filename = "{}/{}_genomic.gff.gz".format(output_folder,base_filename)
 
+    # Skip download if we already have the file
     if not (os.path.isfile(refseq_gff_zip_filename) and os.path.getsize(refseq_gff_zip_filename) > 0):
         if found_on_refseq:           
             # Build the full path to the genomic gff file
@@ -297,12 +328,14 @@ def download_gff(hit_row):
 
         elif BLaccess:
             #If not found at NCBI, and we have BL access, do an environmental lookup
-            url = 'http://bl.biology.yale.edu/lab2/scripts/dimpl_dev.pl'
             values = {'accno' : hit_accession, 'gzip' : '1'}
             data = urllib.parse.urlencode(values).encode('ascii')
-            refseq_gff_zip_ftp_path = urllib.request.Request(url, data)
+            refseq_gff_zip_ftp_path = urllib.request.Request(BL_api, data)
         else:
-            print("Accession number",hit_accession,"not found on NCBI Entrez")
+            if assembly_found:
+                print("Accession number",hit_accession,"not found on NCBI Entrez")
+            else:
+                print("No assembly for Accession number",hit_accession,"found on NCBI Entrez")
             return 'ERROR'
                 
         # Create gff file
@@ -318,15 +351,6 @@ def download_gff(hit_row):
         with open(refseq_gff_zip_filename, 'wb') as refseq_gff_zip_file:
             #copy the content of source file to destination file.
             shutil.copyfileobj(request_gff, refseq_gff_zip_file)
-
-        #unzip gff.gz file and save as .gff file
-        input_gff = gzip.GzipFile(refseq_gff_zip_filename, 'rb')
-        s_gff = input_gff.read()
-        input_gff.close()
-
-        output_gff = open("data/raw/download/{}_genomic.gff".format(base_filename), 'wb')
-        output_gff.write(s_gff)
-        output_gff.close()
        
     return base_filename
 
@@ -380,6 +404,13 @@ def build_context_image(hit_row, alignment, upstream_range = 4000, downstream_ra
     #set range
     down_limit = start - downstream_range
     up_limit = stop + upstream_range
+    
+    #don't let sequence ruler go negative
+    if down_limit < 0:
+        down_limit = 0
+        #force ruler to go slightly negative to make room for left "HIT" arrow
+        if flip_val and stop < 80:
+            down_limit = -70
     
     #print statements for variables to be shown in image
 

@@ -10,8 +10,9 @@ infernal_jobfile="$parent_dir/scripts/${STEPNAME}_infernal_jobfile.sh"
 source $parent_dir/scripts/cluster.conf
 
 echo "Generating infernal batchfile at $infernal_batchfile"
-dSQ.py --jobfile $infernal_jobfile --batch-file $infernal_batchfile -t 1-0\
-  --partition $PARTITION --mem 8G --chdir $parent_dir --status-dir $parent_dir \
+dSQ.py --jobfile $infernal_jobfile --batch-file $infernal_batchfile \
+  --partition $PARTITION --chdir $parent_dir --status-dir $parent_dir \
+  --time 2-0 --cpus-per-task 7 --mem-per-cpu 8G \
   --output output/infernal_output%4a.out --job-name infernal.$(basename $parent_dir) > /dev/null
 infernal_RESPONSE=$(sbatch $infernal_batchfile)
 infernal_JOBID=${infernal_RESPONSE##* }

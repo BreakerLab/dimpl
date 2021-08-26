@@ -3,7 +3,7 @@
 # ##################################################
 # Script for starting docker environment for
 #
-version="1.0.1"               # Sets version variable
+version="1.0.2"               # Sets version variable
 #
 # Templated from https://github.com/natelandau/shell-scripts
 scriptTemplateVersion="1.3.0" # Version of scriptTemplate.sh that this script is based on
@@ -11,6 +11,8 @@ scriptTemplateVersion="1.3.0" # Version of scriptTemplate.sh that this script is
 #
 # 2019-05-20 DATE - v1.0.0  - First Creation
 # 2020-02-19 DATE - v1.0.1  - Added prompt for BL API Key
+# 2021-08-25 DATE - v1.0.2  - Improved security on Windows 10.  
+#                             This script now runs under WSL1&2/Ubuntu without exposing Docker port 2375.
 #
 # ##################################################
 
@@ -96,14 +98,14 @@ if type_not_exists 'docker-compose'; then
     die "docker-compose command not found. Please install docker"
 else
     info "Launching/Restarting 'notebook' docker container"
-    docker-compose pull
-    docker-compose up -d
+    drun docker-compose pull
+    drun docker-compose up -d
     sleep 2
     #info "Logging into Globus"
     #docker exec -it --user jovyan dimpl_container globus login --no-local-server
     # Generate Access URL
-    token=$(docker exec dimpl_container sh -c "jupyter notebook list |  grep -Po '\?token\=(\S+)'")
-    port=$(docker inspect --format='{{range $p, $conf := .NetworkSettings.Ports}} {{(index $conf 0).HostPort}} {{end}}' dimpl_container | awk -F "/" '{print $1}' | tr -d '[:space:]')
+    token=$(drun docker exec dimpl_container sh -c '"jupyter notebook list"' |  grep -Po '\?token\=(\S+)')
+    port=$(drun docker port dimpl_container | head -1 | cut -d":" -f2)
     echo "Access the GC-IGR jupyter notebook at http://localhost:$port/$token"
 fi
 
@@ -181,12 +183,23 @@ fi
 }
 
 
+# Run a Docker command 
+# -----------------------------------
+# Determine if running on Windows (WSL), if so, run via powershell.exe
+# Docker commands especially.
+# -----------------------------------
+function drun() {
+    command=`uname -r | grep "Microsoft" | sed -r 's/.+/powershell.exe -Command /'`
+    $command $@
+}
+
+
 function makeDataset() {
 
 parse_yaml docker-compose.yml "DOCKER_" > "${tmpDir}/parsed_yaml.txt"
 source "${tmpDir}/parsed_yaml.txt"
 
-docker exec -w /home/jovyan/work --user jovyan ${DOCKER_services_notebook_container_name} make data
+drun docker exec -w /home/jovyan/work --user jovyan ${DOCKER_services_notebook_container_name} make data
 }
 
 ############## Begin Options and Usage ###################

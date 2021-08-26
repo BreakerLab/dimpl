@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 thiscmd=`realpath $0`
 parent_dir="$(dirname $thiscmd)"
 mkdir -p $parent_dir/output
@@ -8,6 +9,9 @@ infernal_jobfile="$parent_dir/scripts/${STEPNAME}_infernal_jobfile.sh"
 
 # Pull in variables and set up necessary executables
 source $parent_dir/scripts/cluster.conf
+
+# Enable Email notification if EMAIL var defined in cluster.conf
+if [ -n "$EMAIL" ]; then email_option="--mail-user $EMAIL --mail-type END"; fi
 
 echo "Generating infernal batchfile at $infernal_batchfile"
 dSQ.py --jobfile $infernal_jobfile --batch-file $infernal_batchfile \
@@ -53,7 +57,7 @@ echo "Generating cmfinder batchfile at $cmfinder_batchfile"
 dSQ.py --jobfile $cmfinder_jobfile --batch-file $cmfinder_batchfile \
   --partition $PARTITION --mem 16G --chdir $parent_dir --status-dir $parent_dir \
   --output output/cmfinder_output%4a.out --job-name cmfinder.$(basename $parent_dir) \
-  --dependency afterany:${sample_JOBID} --cpus-per-task 2 --time 7-0 > /dev/null
+  --dependency afterany:${sample_JOBID} --cpus-per-task 2 --time 7-0 $email_option > /dev/null
 
 cmfinder_RESPONSE=$(sbatch $cmfinder_batchfile)
 cmfinder_JOBID=${cmfinder_RESPONSE##* }

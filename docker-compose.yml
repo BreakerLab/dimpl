@@ -2,7 +2,7 @@ version: '3'
 
 services:
   notebook:
-    image: breakerlab/dimpl:v1.0.1
+    image: breakerlab/dimpl:v1.0.2
     ports:
       - 8888:8888
     environment:

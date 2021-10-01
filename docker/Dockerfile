@@ -72,12 +72,11 @@ RUN conda install --quiet --yes \
     conda clean --all -f -y
 
 # Install Genomeview and add fix for Defective Importerrors
-RUN pip install genomeview
-RUN sed -i 's/ImportError/ValueError/' /opt/conda/lib/python3.7/site-packages/genomeview/__init__.py
-ADD genomeview_custom.patch /opt/conda/lib/python3.7/site-packages/genomeview/
+RUN pip install genomeview==1.0.1
+ADD genomeview-1.0.1_dimpl.patch /opt/conda/lib/python3.7/site-packages/genomeview/
 RUN cd /opt/conda/lib/python3.7/site-packages/genomeview/ && \
-    git apply genomeview_custom.patch && \
-    rm genomeview_custom.patch
+    git apply genomeview-1.0.1_dimpl.patch && \
+    rm genomeview-1.0.1_dimpl.patch
 
 # Install Globus-cli
 RUN pip install globus-cli

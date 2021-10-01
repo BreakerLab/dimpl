@@ -457,7 +457,7 @@ def build_context_image(hit_row, alignment, upstream_range = 4000, downstream_ra
             # Add "HIT" text
             yield from renderer.text(x1+(x2-x1)/2, element.height-2, "HIT", size=12, anchor="middle")
             # Draw hit direction arrow (forward/positive stand)
-            yield from renderer.block_arrow(x1+(x2-x1)/2+16, element.height-11, 0, 9, arrow_width=9,
+            yield from renderer.block_arrow(x1+(x2-x1)/2+16, element.height-11, 9, 9, arrow_width=9,
                 direction="right", fill="black", stroke="none")
 
         # IGR is in reverse orientation
@@ -469,7 +469,7 @@ def build_context_image(hit_row, alignment, upstream_range = 4000, downstream_ra
             # Add "HIT" text
             yield from renderer.text(x1+(x2-x1)/2, element.height-2, "HIT", size=12, anchor="middle")
             # Draw hit direction arrow (reverse/negative stand)
-            yield from renderer.block_arrow(x2+(x1-x2)/2-16, element.height-11, 0, 9, arrow_width=9,
+            yield from renderer.block_arrow(x2+(x1-x2)/2-25, element.height-11, 9, 9, arrow_width=9,
                 direction="left", fill="black", stroke="none")
 
     doc=genomeview.visualize_data({"":bed_file},hit_accession,down_limit,up_limit)

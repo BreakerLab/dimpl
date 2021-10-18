@@ -189,7 +189,11 @@ fi
 # Docker commands especially.
 # -----------------------------------
 function drun() {
-    command=`uname -r | grep "Microsoft" | sed -r 's/.+/powershell.exe -Command /'`
+    if [ `uname -r | grep -ic 'microsoft'` -gt 0 ]; then
+        command='powershell.exe -Command'
+    else
+        command=''
+    fi
     $command $@
 }
 

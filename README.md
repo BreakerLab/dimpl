@@ -23,7 +23,7 @@ The DIMPL discovery pipeline enables rapid extraction and selection of bacterial
 
 #### Cluster Configuration
 
-1. Download the IGR search database (filename: s50.igr.fasta) from [this link](https://app.globus.org/file-manager?origin_id=a3c8024e-6f92-11ea-960e-0afc9e7dd773&origin_path=%2F) to your cluster using [Globus FTP](https://www.globus.org/).
+1. Download the IGR search database (filename: s50.igr.fasta) from [this link](https://app.globus.org/file-manager?origin_id=347584ae-43bf-11ec-a6bf-9b4f84e67de8&origin_path=%2F) to your cluster using [Globus FTP](https://www.globus.org/).
 
 2. Ensure the availability of the BLAST nr database on your computational cluster. Follow [these instructions](https://www.ncbi.nlm.nih.gov/books/NBK537770/) for updating/downloading the latest version.
 

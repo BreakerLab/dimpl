@@ -36,7 +36,7 @@ The DIMPL discovery pipeline enables rapid extraction and selection of bacterial
 
 2. Download the docker image. 
 
-`docker pull breakerlab/dimpl`
+`docker pull breakerlab/dimpl:v1.0.1`
 
 3. Configure docker to grant containers access to the folder where the DIMPL repository is located
 

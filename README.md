@@ -31,12 +31,12 @@ The DIMPL discovery pipeline enables rapid extraction and selection of bacterial
 
 1. Download the source code (into any folder on drive)
 
- `wget https://github.com/BreakerLab/dimpl/archive/dimpl_1.0.2.tar.gz`
- `tar xzvf dimpl_1.0.2.tar.gz`
+    `wget https://github.com/BreakerLab/dimpl/archive/dimpl_1.0.2.tar.gz`  
+    `tar xzvf dimpl_1.0.2.tar.gz`
 
 2. Download the docker image. 
 
- `docker pull breakerlab/dimpl`
+    `docker pull breakerlab/dimpl`
 
 3. Configure docker to grant containers access to the folder where the DIMPL repository is located
 

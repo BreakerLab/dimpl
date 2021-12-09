@@ -14,6 +14,8 @@ RUN apt-get update && \
     gnuplot-x11 \
     cufflinks \
     zlib1g-dev \
+    vim \
+    less \
     xvfb && \
     apt-get clean && \
     apt-get autoremove && \

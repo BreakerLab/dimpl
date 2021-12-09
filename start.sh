@@ -11,8 +11,10 @@ scriptTemplateVersion="1.3.0" # Version of scriptTemplate.sh that this script is
 #
 # 2019-05-20 DATE - v1.0.0  - First Creation
 # 2020-02-19 DATE - v1.0.1  - Added prompt for BL API Key
-# 2021-08-25 DATE - v1.0.2  - Improved security on Windows 10.  
-#                             This script now runs under WSL1&2/Ubuntu without exposing Docker port 2375.
+# 2021-11-25 DATE - v1.0.2  - Improved security on Windows 10.
+#                           - Can run with WSL1&2/Ubuntu without exposing Docker port 2375.
+#                           - Can run on MacOS now.
+#                           - Can run multiple instances on the same system.
 #
 # ##################################################
 
@@ -79,7 +81,34 @@ tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
 # -----------------------------------
 logFile="$HOME/Library/Logs/${scriptBasename}.log"
 
+# Docker
+# -----------------------------------
+shopt -s expand_aliases     # for docker alias
+container="dimpl"
+project="dimpl"
 
+# Check if user wants to start a separate instance.
+# Parameter #1 (a string) will be appended to the container name.
+# (ex. "test" or "dev")
+if [ -n "$1" ]; then
+    container="${container}_$1"
+    project=${container}
+fi
+export DIMPL_CONTAINER="$container"
+
+# -----------------------------------
+# Determine if running on Windows Subsystem for Linux (WSL), if so, setup a "docker" ailas
+# that runs the "docker.exe" installed under Windows.  (to avoid having to expose TLS port 2375)
+# -----------------------------------
+if [ `uname -r | grep -ic "microsoft"` -gt 0 ]; then
+    alias docker="'$(wslpath "`powershell.exe -c "(Get-Command docker).path"`" | tr -d "\r")'"
+    # Pass variables to powershell
+    export WSLENV=$WSLENV:DIMPL_CONTAINER
+fi
+
+
+# MAIN
+# -----------------------------------
 function mainScript() {
 
 # If the .env file is not present, configure
@@ -94,19 +123,38 @@ else
 fi
 
 # Make sure docker is installed then launch notebook
-if type_not_exists 'docker-compose'; then
-    die "docker-compose command not found. Please install docker"
+if type_not_exists 'docker'; then
+    die "docker command not found. Please install docker"
 else
-    info "Launching/Restarting 'notebook' docker container"
-    drun docker-compose pull
-    drun docker-compose up -d
+    # Check if docker CLI version has "compose" integration.
+    # "docker-compose" will be phased out in the future.
+    # Use "docker compose" instead.
+    if [ "$(docker compose version 2>/dev/null)" ]; then
+	docker-compose() {
+	    docker compose $@
+	}
+    fi
+
+    info "Launching/Restarting '$container' docker container"
+
+    # Pull docker image from Dockerhub if not using local image.
+    if [ "`grep -c "^[ \t]*image:.*:" docker-compose.yml`" -gt 0 ]; then
+        docker-compose pull
+    fi
+
+    docker-compose -p $project up -d
     sleep 2
+
     #info "Logging into Globus"
     #docker exec -it --user jovyan dimpl_container globus login --no-local-server
+
     # Generate Access URL
-    token=$(drun docker exec dimpl_container sh -c '"jupyter notebook list"' |  grep -Po '\?token\=(\S+)')
-    port=$(drun docker port dimpl_container | head -1 | cut -d":" -f2)
-    echo "Access the GC-IGR jupyter notebook at http://localhost:$port/$token"
+    token=$(docker exec $container sh -c 'jupyter notebook list' |  grep -o '\?token\=[^\ ]\+')
+    port=$(docker port $container | head -1 | cut -d":" -f2)
+    echo
+    echo "Access DIMPL with the following URL:"
+    echo "   http://localhost:${port}/tree/work/notebooks${token}"
+    echo
 fi
 
 
@@ -183,27 +231,12 @@ fi
 }
 
 
-# Run a Docker command 
-# -----------------------------------
-# Determine if running on Windows (WSL), if so, run via powershell.exe
-# Docker commands especially.
-# -----------------------------------
-function drun() {
-    if [ `uname -r | grep -ic 'microsoft'` -gt 0 ]; then
-        command='powershell.exe -Command'
-    else
-        command=''
-    fi
-    $command $@
-}
-
-
 function makeDataset() {
 
 parse_yaml docker-compose.yml "DOCKER_" > "${tmpDir}/parsed_yaml.txt"
 source "${tmpDir}/parsed_yaml.txt"
 
-drun docker exec -w /home/jovyan/work --user jovyan ${DOCKER_services_notebook_container_name} make data
+docker exec -w /home/jovyan/work --user jovyan ${DOCKER_services_notebook_container_name} make data
 }
 
 ############## Begin Options and Usage ###################
@@ -211,9 +244,11 @@ drun docker exec -w /home/jovyan/work --user jovyan ${DOCKER_services_notebook_c
 
 # Print usage
 usage() {
-  echo -n "${scriptName} [OPTION]... [FILE]...
+  echo -n "${scriptName} [OPTION]... [INSTANCE NAME SUFFIX]
 
-This is my script template.
+ Instance Name Suffix: [optional]
+  Used for starting multiple Dimpl docker containers.
+  Example: 'start.sh test' would create container name of 'dimpl_test'
 
  Options:
   -m, --make        Run the 'make data' command inside docker-container upon completion

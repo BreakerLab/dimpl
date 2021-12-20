@@ -62,6 +62,7 @@ RUN rm /opt/conda/conda-meta/pinned
 RUN conda install --quiet --yes \
     'ipywidgets>7.5' \
     'conda-forge::python-dotenv' \
+    'conda-forge::numexpr>=2.7.0' \
     'biopython' \
     'bioconda::bedops' \
     'bioconda::bx-python' \

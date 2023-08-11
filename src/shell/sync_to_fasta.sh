@@ -18,6 +18,6 @@ fi
 
 ( awk '/^>/ {print $1}' $fasta_file; cat $sto_file  ) |
     awk '/^>/ {sub("^>","",$1); accno[$1]=1; next} \
-         /^#=GR/ {next};
-         !/^[>#]/ && accno[$1] || "'$fasta_file'"=="/dev/null" {print; next} ;\
-         /^[#/]/ || /^$/ {print}'
+        /^#=GR/ {next};
+        !/^[>#]/ && accno[$1] || "'$fasta_file'"=="/dev/null" {print; next} ;\
+        /^[#/]/ || /^$/ {print}'

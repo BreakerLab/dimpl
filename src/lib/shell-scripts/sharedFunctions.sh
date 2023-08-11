@@ -23,12 +23,12 @@
 # Non destructive exit for when script exits naturally.
 # Usage: Add this function at the end of every script
 function safeExit() {
-  # Delete temp files, if any
-  if is_dir "${tmpDir}"; then
-    rm -r "${tmpDir}"
-  fi
-  trap - INT TERM EXIT
-  exit
+    # Delete temp files, if any
+    if is_dir "${tmpDir}"; then
+        rm -r "${tmpDir}"
+    fi
+    trap - INT TERM EXIT
+    exit
 }
 
 # readFile
@@ -39,11 +39,11 @@ function safeExit() {
 # Outputs each line in a variable named $result
 # ------------------------------------------------------
 function readFile() {
-  unset "${result}"
-  while read result
-  do
-    echo "${result}"
-  done < "$1"
+    unset "${result}"
+    while read result
+    do
+        echo "${result}"
+    done < "$1"
 }
 
 # Escape a string
@@ -58,9 +58,9 @@ escape() { echo "${@}" | sed 's/[]\.|$(){}?+*^]/\\&/g'; }
 # requests sudo access and then keeps it alive.
 # ------------------------------------------------------
 function needSudo() {
-  # Update existing sudo time stamp if set, otherwise do nothing.
-  sudo -v
-  while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+    # Update existing sudo time stamp if set, otherwise do nothing.
+    sudo -v
+    while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 }
 
 # convertsecs
@@ -76,10 +76,10 @@ function needSudo() {
 #   TOTALTIME=$(($ENDTIME-$STARTTIME))
 # ------------------------------------------------------
 function convertsecs() {
-  ((h=${1}/3600))
-  ((m=$(${1}%3600)/60))
-  ((s=${1}%60))
-  printf "%02d:%02d:%02d\n" $h $m $s
+    ((h=${1}/3600))
+    ((m=$(${1}%3600)/60))
+    ((s=${1}%60))
+    printf "%02d:%02d:%02d\n" $h $m $s
 }
 
 # Join
@@ -106,73 +106,73 @@ function join() { local IFS="${1}"; shift; echo "${*}"; }
 # ------------------------------------------------------
 
 function is_exists() {
-  if [[ -e "$1" ]]; then
-    return 0
-  fi
-  return 1
+    if [[ -e "$1" ]]; then
+        return 0
+    fi
+    return 1
 }
 
 function is_not_exists() {
-  if [[ ! -e "$1" ]]; then
-    return 0
-  fi
-  return 1
+    if [[ ! -e "$1" ]]; then
+        return 0
+    fi
+    return 1
 }
 
 function is_file() {
-  if [[ -f "$1" ]]; then
-    return 0
-  fi
-  return 1
+    if [[ -f "$1" ]]; then
+        return 0
+    fi
+    return 1
 }
 
 function is_not_file() {
-  if [[ ! -f "$1" ]]; then
-    return 0
-  fi
-  return 1
+    if [[ ! -f "$1" ]]; then
+        return 0
+    fi
+    return 1
 }
 
 function is_dir() {
-  if [[ -d "$1" ]]; then
-    return 0
-  fi
-  return 1
+    if [[ -d "$1" ]]; then
+        return 0
+    fi
+    return 1
 }
 
 function is_not_dir() {
-  if [[ ! -d "$1" ]]; then
-    return 0
-  fi
-  return 1
+    if [[ ! -d "$1" ]]; then
+        return 0
+    fi
+    return 1
 }
 
 function is_symlink() {
-  if [[ -L "$1" ]]; then
-    return 0
-  fi
-  return 1
+    if [[ -L "$1" ]]; then
+        return 0
+    fi
+    return 1
 }
 
 function is_not_symlink() {
-  if [[ ! -L "$1" ]]; then
-    return 0
-  fi
-  return 1
+    if [[ ! -L "$1" ]]; then
+        return 0
+    fi
+    return 1
 }
 
 function is_empty() {
-  if [[ -z "$1" ]]; then
-    return 0
-  fi
-  return 1
+    if [[ -z "$1" ]]; then
+        return 0
+    fi
+    return 1
 }
 
 function is_not_empty() {
-  if [[ -n "$1" ]]; then
-    return 0
-  fi
-  return 1
+    if [[ -n "$1" ]]; then
+        return 0
+    fi
+    return 1
 }
 
 # Test whether a command exists
@@ -186,17 +186,17 @@ function is_not_empty() {
 # ------------------------------------------------------
 
 function type_exists() {
-  if [ "$(type -P "$1")" ]; then
-    return 0
-  fi
-  return 1
+    if [ "$(type -P "$1")" ]; then
+        return 0
+    fi
+    return 1
 }
 
 function type_not_exists() {
-  if [ ! "$(type -P "$1")" ]; then
-    return 0
-  fi
-  return 1
+    if [ ! "$(type -P "$1")" ]; then
+        return 0
+    fi
+    return 1
 }
 
 # Test which OS the user runs
@@ -204,10 +204,10 @@ function type_not_exists() {
 # Usage: if is_os 'darwin'; then
 
 function is_os() {
-  if [[ "${OSTYPE}" == $1* ]]; then
-    return 0
-  fi
-  return 1
+    if [[ "${OSTYPE}" == $1* ]]; then
+        return 0
+    fi
+    return 1
 }
 
 
@@ -229,37 +229,37 @@ function is_os() {
 
 # Ask the question
 function seek_confirmation() {
-  # echo ""
-  input "$@"
-  if [[ "${force}" = 1 ]]; then
-    notice "Forcing confirmation with '--force' flag set"
-  else
-    read -p " (y/n) " -n 1
-    echo ""
-  fi
+    # echo ""
+    input "$@"
+    if [[ "${force}" = 1 ]]; then
+        notice "Forcing confirmation with '--force' flag set"
+    else
+        read -p " (y/n) " -n 1
+        echo ""
+    fi
 }
 
 # Test whether the result of an 'ask' is a confirmation
 function is_confirmed() {
-  if [[ "${force}" = 1 ]]; then
-    return 0
-  else
-    if [[ "${REPLY}" =~ ^[Yy]$ ]]; then
-      return 0
+    if [[ "${force}" = 1 ]]; then
+        return 0
+    else
+        if [[ "${REPLY}" =~ ^[Yy]$ ]]; then
+        return 0
+        fi
+        return 1
     fi
-    return 1
-  fi
 }
 
 function is_not_confirmed() {
-  if "${force}"; then
-    return 1
-  else
-    if [[ "${REPLY}" =~ ^[Nn]$ ]]; then
-      return 0
+    if "${force}"; then
+        return 1
+    else
+        if [[ "${REPLY}" =~ ^[Nn]$ ]]; then
+        return 0
+        fi
+        return 1
     fi
-    return 1
-  fi
 }
 
 # Skip something
@@ -268,15 +268,15 @@ function is_not_confirmed() {
 # Credit: https://github.com/cowboy/dotfiles
 # ------------------------------------------------------
 function skip() {
-  REPLY=noskip
-  read -t 5 -n 1 -s -p "${bold}To skip, press ${underline}X${reset}${bold} within 5 seconds.${reset}"
-  if [[ "$REPLY" =~ ^[Xx]$ ]]; then
-    notice "  Skipping!"
-    return 0
-  else
-    notice "  Continuing..."
-    return 1
-  fi
+    REPLY=noskip
+    read -t 5 -n 1 -s -p "${bold}To skip, press ${underline}X${reset}${bold} within 5 seconds.${reset}"
+    if [[ "$REPLY" =~ ^[Xx]$ ]]; then
+        notice "  Skipping!"
+        return 0
+    else
+        notice "  Continuing..."
+        return 1
+    fi
 }
 
 # unmountDrive
@@ -285,9 +285,9 @@ function skip() {
 # will unmount the volume.  This will only work on Macs.
 # ------------------------------------------------------
 function unmountDrive() {
-  if [ -d "$1" ]; then
-    diskutil unmount "$1"
-  fi
+    if [ -d "$1" ]; then
+        diskutil unmount "$1"
+    fi
 }
 
 # help
@@ -298,26 +298,26 @@ function unmountDrive() {
 # in the '$usage' variable.
 # ------------------------------------------------------
 function help () {
-  echo "" 1>&2
-  input "   $@" 1>&2
-  if [ -n "${usage}" ]; then # print usage information if available
-    echo "   ${usage}" 1>&2
-  fi
-  echo "" 1>&2
-  exit 1
+    echo "" 1>&2
+    input "   $@" 1>&2
+    if [ -n "${usage}" ]; then # print usage information if available
+        echo "   ${usage}" 1>&2
+    fi
+    echo "" 1>&2
+    exit 1
 }
 
 
 function pauseScript() {
-  # A simple function used to pause a script at any point and
-  # only continue on user input
-  seek_confirmation "Ready to continue?"
-  if is_confirmed; then
-    info "Continuing"
-  else
-    warning "Exiting Script."
-    safeExit
-  fi
+    # A simple function used to pause a script at any point and
+    # only continue on user input
+    seek_confirmation "Ready to continue?"
+    if is_confirmed; then
+        info "Continuing"
+    else
+        warning "Exiting Script."
+        safeExit
+    fi
 }
 
 function in_array() {
@@ -337,47 +337,47 @@ function in_array() {
 # -----------------------------------
 
 lower() {
-  # Convert stdin to lowercase.
-  # usage:  text=$(lower <<<"$1")
-  #         echo "MAKETHISLOWERCASE" | lower
-  tr '[:upper:]' '[:lower:]'
+    # Convert stdin to lowercase.
+    # usage:  text=$(lower <<<"$1")
+    #         echo "MAKETHISLOWERCASE" | lower
+    tr '[:upper:]' '[:lower:]'
 }
 
 upper() {
-  # Convert stdin to uppercase.
-  # usage:  text=$(upper <<<"$1")
-  #         echo "MAKETHISUPPERCASE" | upper
-  tr '[:lower:]' '[:upper:]'
+    # Convert stdin to uppercase.
+    # usage:  text=$(upper <<<"$1")
+    #         echo "MAKETHISUPPERCASE" | upper
+    tr '[:lower:]' '[:upper:]'
 }
 
 ltrim() {
-  # Removes all leading whitespace (from the left).
-  local char=${1:-[:space:]}
-    sed "s%^[${char//%/\\%}]*%%"
+    # Removes all leading whitespace (from the left).
+    local char=${1:-[:space:]}
+        sed "s%^[${char//%/\\%}]*%%"
 }
 
 rtrim() {
-  # Removes all trailing whitespace (from the right).
-  local char=${1:-[:space:]}
-  sed "s%[${char//%/\\%}]*$%%"
+    # Removes all trailing whitespace (from the right).
+    local char=${1:-[:space:]}
+    sed "s%[${char//%/\\%}]*$%%"
 }
 
 trim() {
-  # Removes all leading/trailing whitespace
-  # Usage examples:
-  #     echo "  foo  bar baz " | trim  #==> "foo  bar baz"
-  ltrim "$1" | rtrim "$1"
+    # Removes all leading/trailing whitespace
+    # Usage examples:
+    #     echo "  foo  bar baz " | trim  #==> "foo  bar baz"
+    ltrim "$1" | rtrim "$1"
 }
 
 squeeze() {
-  # Removes leading/trailing whitespace and condenses all other consecutive
-  # whitespace into a single space.
-  #
-  # Usage examples:
-  #     echo "  foo  bar   baz  " | squeeze  #==> "foo bar baz"
+    # Removes leading/trailing whitespace and condenses all other consecutive
+    # whitespace into a single space.
+    #
+    # Usage examples:
+    #     echo "  foo  bar   baz  " | squeeze  #==> "foo bar baz"
 
-  local char=${1:-[[:space:]]}
-  sed "s%\(${char//%/\\%}\)\+%\1%g" | trim "$char"
+    local char=${1:-[[:space:]]}
+    sed "s%\(${char//%/\\%}\)\+%\1%g" | trim "$char"
 }
 
 squeeze_lines() {
@@ -392,90 +392,90 @@ squeeze_lines() {
 }
 
 progressBar() {
-  # progressBar
-  # -----------------------------------
-  # Prints a progress bar within a for/while loop.
-  # To use this function you must pass the total number of
-  # times the loop will run to the function.
-  #
-  # usage:
-  #   for number in $(seq 0 100); do
-  #     sleep 1
-  #     progressBar 100
-  #   done
-  # -----------------------------------
-  if [[ "${quiet}" = "true" ]] || [ "${quiet}" == "1" ]; then
-    return
-  fi
+    # progressBar
+    # -----------------------------------
+    # Prints a progress bar within a for/while loop.
+    # To use this function you must pass the total number of
+    # times the loop will run to the function.
+    #
+    # usage:
+    #   for number in $(seq 0 100); do
+    #     sleep 1
+    #     progressBar 100
+    #   done
+    # -----------------------------------
+    if [[ "${quiet}" = "true" ]] || [ "${quiet}" == "1" ]; then
+        return
+    fi
 
-  local width
-  width=30
-  bar_char="#"
+    local width
+    width=30
+    bar_char="#"
 
-  # Don't run this function when scripts are running in verbose mode
-  if ${verbose}; then return; fi
+    # Don't run this function when scripts are running in verbose mode
+    if ${verbose}; then return; fi
 
-  # Reset the count
-  if [ -z "${progressBarProgress}" ]; then
-    progressBarProgress=0
-  fi
+    # Reset the count
+    if [ -z "${progressBarProgress}" ]; then
+        progressBarProgress=0
+    fi
 
-  # Do nothing if the output is not a terminal
-  if [ ! -t 1 ]; then
-      echo "Output is not a terminal" 1>&2
-      return
-  fi
-  # Hide the cursor
+    # Do nothing if the output is not a terminal
+    if [ ! -t 1 ]; then
+        echo "Output is not a terminal" 1>&2
+        return
+    fi
+    # Hide the cursor
     tput civis
     trap 'tput cnorm; exit 1' SIGINT
 
-  if [ ! "${progressBarProgress}" -eq $(( $1 - 1 )) ]; then
-    # Compute the percentage.
-    perc=$(( progressBarProgress * 100 / $1 ))
-    # Compute the number of blocks to represent the percentage.
-    num=$(( progressBarProgress * width / $1 ))
-    # Create the progress bar string.
-    bar=
-    if [ ${num} -gt 0 ]; then
-        bar=$(printf "%0.s${bar_char}" $(seq 1 ${num}))
+    if [ ! "${progressBarProgress}" -eq $(( $1 - 1 )) ]; then
+        # Compute the percentage.
+        perc=$(( progressBarProgress * 100 / $1 ))
+        # Compute the number of blocks to represent the percentage.
+        num=$(( progressBarProgress * width / $1 ))
+        # Create the progress bar string.
+        bar=
+        if [ ${num} -gt 0 ]; then
+            bar=$(printf "%0.s${bar_char}" $(seq 1 ${num}))
+        fi
+        # Print the progress bar.
+        progressBarLine=$(printf "%s [%-${width}s] (%d%%)" "Running Process" "${bar}" "${perc}")
+        echo -en "${progressBarLine}\r"
+        progressBarProgress=$(( progressBarProgress + 1 ))
+    else
+        # Clear the progress bar when complete
+        echo -ne "${width}%\033[0K\r"
+        unset progressBarProgress
     fi
-    # Print the progress bar.
-    progressBarLine=$(printf "%s [%-${width}s] (%d%%)" "Running Process" "${bar}" "${perc}")
-    echo -en "${progressBarLine}\r"
-    progressBarProgress=$(( progressBarProgress + 1 ))
-  else
-    # Clear the progress bar when complete
-    echo -ne "${width}%\033[0K\r"
-    unset progressBarProgress
-  fi
 
-  tput cnorm
+    tput cnorm
 }
 
 htmlDecode() {
-  # Decode HTML characters with sed
-  # Usage: htmlDecode <string>
-  echo "${1}" | sed -f "${SOURCEPATH}/htmlDecode.sed"
+    # Decode HTML characters with sed
+    # Usage: htmlDecode <string>
+    echo "${1}" | sed -f "${SOURCEPATH}/htmlDecode.sed"
 }
 
 htmlEncode() {
-  # Encode HTML characters with sed
-  # Usage: htmlEncode <string>
-  echo "${1}" | sed -f "${SOURCEPATH}/htmlEncode.sed"
+    # Encode HTML characters with sed
+    # Usage: htmlEncode <string>
+    echo "${1}" | sed -f "${SOURCEPATH}/htmlEncode.sed"
 }
 
 urlencode() {
-  # URL encoding/decoding from: https://gist.github.com/cdown/1163649
-  # Usage: urlencode <string>
+    # URL encoding/decoding from: https://gist.github.com/cdown/1163649
+    # Usage: urlencode <string>
 
-  local length="${#1}"
-  for (( i = 0; i < length; i++ )); do
-      local c="${1:i:1}"
-      case $c in
-          [a-zA-Z0-9.~_-]) printf "%s" "$c" ;;
-          *) printf '%%%02X' "'$c"
-      esac
-  done
+    local length="${#1}"
+    for (( i = 0; i < length; i++ )); do
+        local c="${1:i:1}"
+        case $c in
+            [a-zA-Z0-9.~_-]) printf "%s" "$c" ;;
+            *) printf '%%%02X' "'$c"
+        esac
+    done
 }
 
 urldecode() {
@@ -486,17 +486,17 @@ urldecode() {
 }
 
 parse_yaml() {
-  # Function to parse YAML files and add values to variables. Send it to a temp file and source it
-  # https://gist.github.com/DinoChiesa/3e3c3866b51290f31243 which is derived from
-  # https://gist.github.com/epiloque/8cf512c6d64641bde388
-  #
-  # Usage:
-  #     $ parse_yaml sample.yml > /some/tempfile
-  #
-  # parse_yaml accepts a prefix argument so that imported settings all have a common prefix
-  # (which will reduce the risk of name-space collisions).
-  #
-  #     $ parse_yaml sample.yml "CONF_"
+    # Function to parse YAML files and add values to variables. Send it to a temp file and source it
+    # https://gist.github.com/DinoChiesa/3e3c3866b51290f31243 which is derived from
+    # https://gist.github.com/epiloque/8cf512c6d64641bde388
+    #
+    # Usage:
+    #     $ parse_yaml sample.yml > /some/tempfile
+    #
+    # parse_yaml accepts a prefix argument so that imported settings all have a common prefix
+    # (which will reduce the risk of name-space collisions).
+    #
+    #     $ parse_yaml sample.yml "CONF_"
 
     local prefix=$2
     local s
@@ -508,168 +508,168 @@ parse_yaml() {
     sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
         -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$1" |
     awk -F"$fs" '{
-      indent = length($1)/2;
-      if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
-      vname[indent] = $2;
-      for (i in vname) {if (i > indent) {delete vname[i]}}
-      if (length($3) > 0) {
-              vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-              printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
-      }
+        indent = length($1)/2;
+        if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
+        vname[indent] = $2;
+        for (i in vname) {if (i > indent) {delete vname[i]}}
+        if (length($3) > 0) {
+                vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+                printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
+        }
     }' | sed 's/_=/+=/g'
 }
 
 httpStatus() {
-  # -----------------------------------
-  # Shamelessly taken from: https://gist.github.com/rsvp/1171304
-  #
-  # Usage:  httpStatus URL [timeout] [--code or --status] [see 4.]
-  #                                             ^message with code (default)
-  #                                     ^code (numeric only)
-  #                           ^in secs (default: 3)
-  #                   ^URL without "http://" prefix works fine.
-  #
-  #  4. curl options: e.g. use -L to follow redirects.
-  #
-  #  Dependencies: curl
-  #
-  #         Example:  $ httpStatus bit.ly
-  #                   301 Redirection: Moved Permanently
-  #
-  #         Example: $ httpStatus www.google.com 100 -c
-  #                  200
-  #
-  # -----------------------------------
-  local curlops
-  local arg4
-  local arg5
-  local arg6
-  local arg7
-  local flag
-  local timeout
-  local url
+    # -----------------------------------
+    # Shamelessly taken from: https://gist.github.com/rsvp/1171304
+    #
+    # Usage:  httpStatus URL [timeout] [--code or --status] [see 4.]
+    #                                             ^message with code (default)
+    #                                     ^code (numeric only)
+    #                           ^in secs (default: 3)
+    #                   ^URL without "http://" prefix works fine.
+    #
+    #  4. curl options: e.g. use -L to follow redirects.
+    #
+    #  Dependencies: curl
+    #
+    #         Example:  $ httpStatus bit.ly
+    #                   301 Redirection: Moved Permanently
+    #
+    #         Example: $ httpStatus www.google.com 100 -c
+    #                  200
+    #
+    # -----------------------------------
+    local curlops
+    local arg4
+    local arg5
+    local arg6
+    local arg7
+    local flag
+    local timeout
+    local url
 
-  saveIFS=${IFS}
-  IFS=$' \n\t'
+    saveIFS=${IFS}
+    IFS=$' \n\t'
 
-  url=${1}
-  timeout=${2:-'3'}
-  #            ^in seconds
-  flag=${3:-'--status'}
-  #    curl options, e.g. -L to follow redirects
-  arg4=${4:-''}
-  arg5=${5:-''}
-  arg6=${6:-''}
-  arg7=${7:-''}
-  curlops="${arg4} ${arg5} ${arg6} ${arg7}"
+    url=${1}
+    timeout=${2:-'3'}
+    #            ^in seconds
+    flag=${3:-'--status'}
+    #    curl options, e.g. -L to follow redirects
+    arg4=${4:-''}
+    arg5=${5:-''}
+    arg6=${6:-''}
+    arg7=${7:-''}
+    curlops="${arg4} ${arg5} ${arg6} ${arg7}"
 
-  #      __________ get the CODE which is numeric:
-  code=`echo $(curl --write-out %{http_code} --silent --connect-timeout ${timeout} \
-                  --no-keepalive ${curlops} --output /dev/null  ${url})`
+    #      __________ get the CODE which is numeric:
+    code=`echo $(curl --write-out %{http_code} --silent --connect-timeout ${timeout} \
+                    --no-keepalive ${curlops} --output /dev/null  ${url})`
 
-  #      __________ get the STATUS (from code) which is human interpretable:
-  case $code in
-       000) status="Not responding within ${timeout} seconds" ;;
-       100) status="Informational: Continue" ;;
-       101) status="Informational: Switching Protocols" ;;
-       200) status="Successful: OK within ${timeout} seconds" ;;
-       201) status="Successful: Created" ;;
-       202) status="Successful: Accepted" ;;
-       203) status="Successful: Non-Authoritative Information" ;;
-       204) status="Successful: No Content" ;;
-       205) status="Successful: Reset Content" ;;
-       206) status="Successful: Partial Content" ;;
-       300) status="Redirection: Multiple Choices" ;;
-       301) status="Redirection: Moved Permanently" ;;
-       302) status="Redirection: Found residing temporarily under different URI" ;;
-       303) status="Redirection: See Other" ;;
-       304) status="Redirection: Not Modified" ;;
-       305) status="Redirection: Use Proxy" ;;
-       306) status="Redirection: status not defined" ;;
-       307) status="Redirection: Temporary Redirect" ;;
-       400) status="Client Error: Bad Request" ;;
-       401) status="Client Error: Unauthorized" ;;
-       402) status="Client Error: Payment Required" ;;
-       403) status="Client Error: Forbidden" ;;
-       404) status="Client Error: Not Found" ;;
-       405) status="Client Error: Method Not Allowed" ;;
-       406) status="Client Error: Not Acceptable" ;;
-       407) status="Client Error: Proxy Authentication Required" ;;
-       408) status="Client Error: Request Timeout within ${timeout} seconds" ;;
-       409) status="Client Error: Conflict" ;;
-       410) status="Client Error: Gone" ;;
-       411) status="Client Error: Length Required" ;;
-       412) status="Client Error: Precondition Failed" ;;
-       413) status="Client Error: Request Entity Too Large" ;;
-       414) status="Client Error: Request-URI Too Long" ;;
-       415) status="Client Error: Unsupported Media Type" ;;
-       416) status="Client Error: Requested Range Not Satisfiable" ;;
-       417) status="Client Error: Expectation Failed" ;;
-       500) status="Server Error: Internal Server Error" ;;
-       501) status="Server Error: Not Implemented" ;;
-       502) status="Server Error: Bad Gateway" ;;
-       503) status="Server Error: Service Unavailable" ;;
-       504) status="Server Error: Gateway Timeout within ${timeout} seconds" ;;
-       505) status="Server Error: HTTP Version Not Supported" ;;
-       *)   echo " !!  httpstatus: status not defined." && safeExit ;;
-  esac
+    #      __________ get the STATUS (from code) which is human interpretable:
+    case $code in
+        000) status="Not responding within ${timeout} seconds" ;;
+        100) status="Informational: Continue" ;;
+        101) status="Informational: Switching Protocols" ;;
+        200) status="Successful: OK within ${timeout} seconds" ;;
+        201) status="Successful: Created" ;;
+        202) status="Successful: Accepted" ;;
+        203) status="Successful: Non-Authoritative Information" ;;
+        204) status="Successful: No Content" ;;
+        205) status="Successful: Reset Content" ;;
+        206) status="Successful: Partial Content" ;;
+        300) status="Redirection: Multiple Choices" ;;
+        301) status="Redirection: Moved Permanently" ;;
+        302) status="Redirection: Found residing temporarily under different URI" ;;
+        303) status="Redirection: See Other" ;;
+        304) status="Redirection: Not Modified" ;;
+        305) status="Redirection: Use Proxy" ;;
+        306) status="Redirection: status not defined" ;;
+        307) status="Redirection: Temporary Redirect" ;;
+        400) status="Client Error: Bad Request" ;;
+        401) status="Client Error: Unauthorized" ;;
+        402) status="Client Error: Payment Required" ;;
+        403) status="Client Error: Forbidden" ;;
+        404) status="Client Error: Not Found" ;;
+        405) status="Client Error: Method Not Allowed" ;;
+        406) status="Client Error: Not Acceptable" ;;
+        407) status="Client Error: Proxy Authentication Required" ;;
+        408) status="Client Error: Request Timeout within ${timeout} seconds" ;;
+        409) status="Client Error: Conflict" ;;
+        410) status="Client Error: Gone" ;;
+        411) status="Client Error: Length Required" ;;
+        412) status="Client Error: Precondition Failed" ;;
+        413) status="Client Error: Request Entity Too Large" ;;
+        414) status="Client Error: Request-URI Too Long" ;;
+        415) status="Client Error: Unsupported Media Type" ;;
+        416) status="Client Error: Requested Range Not Satisfiable" ;;
+        417) status="Client Error: Expectation Failed" ;;
+        500) status="Server Error: Internal Server Error" ;;
+        501) status="Server Error: Not Implemented" ;;
+        502) status="Server Error: Bad Gateway" ;;
+        503) status="Server Error: Service Unavailable" ;;
+        504) status="Server Error: Gateway Timeout within ${timeout} seconds" ;;
+        505) status="Server Error: HTTP Version Not Supported" ;;
+        *)   echo " !!  httpstatus: status not defined." && safeExit ;;
+    esac
 
 
-  # _______________ MAIN
-  case ${flag} in
-       --status) echo "${code} ${status}" ;;
-       -s)       echo "${code} ${status}" ;;
-       --code)   echo "${code}"         ;;
-       -c)       echo "${code}"         ;;
-       *)        echo " !!  httpstatus: bad flag" && safeExit;;
-  esac
+    # _______________ MAIN
+    case ${flag} in
+        --status) echo "${code} ${status}" ;;
+        -s)       echo "${code} ${status}" ;;
+        --code)   echo "${code}"         ;;
+        -c)       echo "${code}"         ;;
+        *)        echo " !!  httpstatus: bad flag" && safeExit;;
+    esac
 
-  IFS="${saveIFS}"
+    IFS="${saveIFS}"
 }
 
 function makeCSV() {
-  # Creates a new CSV file if one does not already exist.
-  # Takes passed arguments and writes them as a header line to the CSV
-  # Usage 'makeCSV column1 column2 column3'
+    # Creates a new CSV file if one does not already exist.
+    # Takes passed arguments and writes them as a header line to the CSV
+    # Usage 'makeCSV column1 column2 column3'
 
-  # Set the location and name of the CSV File
-  if [ -z "${csvLocation}" ]; then
-    csvLocation="${HOME}/Desktop"
-  fi
-  if [ -z "${csvName}" ]; then
-    csvName="$(LC_ALL=C date +%Y-%m-%d)-${FUNCNAME[1]}.csv"
-  fi
-  csvFile="${csvLocation}/${csvName}"
-
-  # Overwrite existing file? If not overwritten, new content is added
-  # to the bottom of the existing file
-  if [ -f "${csvFile}" ]; then
-    seek_confirmation "${csvFile} already exists. Overwrite?"
-    if is_confirmed; then
-      rm "${csvFile}"
-      writeCSV "$@"
+    # Set the location and name of the CSV File
+    if [ -z "${csvLocation}" ]; then
+        csvLocation="${HOME}/Desktop"
     fi
-  fi
+    if [ -z "${csvName}" ]; then
+        csvName="$(LC_ALL=C date +%Y-%m-%d)-${FUNCNAME[1]}.csv"
+    fi
+    csvFile="${csvLocation}/${csvName}"
+
+    # Overwrite existing file? If not overwritten, new content is added
+    # to the bottom of the existing file
+    if [ -f "${csvFile}" ]; then
+        seek_confirmation "${csvFile} already exists. Overwrite?"
+        if is_confirmed; then
+        rm "${csvFile}"
+        writeCSV "$@"
+        fi
+    fi
 }
 
 function writeCSV() {
-  # Takes passed arguments and writes them as a comma separated line
-  # Usage 'writeCSV column1 column2 column3'
+    # Takes passed arguments and writes them as a comma separated line
+    # Usage 'writeCSV column1 column2 column3'
 
-  csvInput=($@)
-  saveIFS=$IFS
-  IFS=','
-  echo "${csvInput[*]}" >> "${csvFile}"
-  IFS=$saveIFS
+    csvInput=($@)
+    saveIFS=$IFS
+    IFS=','
+    echo "${csvInput[*]}" >> "${csvFile}"
+    IFS=$saveIFS
 
 }
 
 function json2yaml() {
-  # convert json files to yaml using python and PyYAML
-  python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < "$1"
+    # convert json files to yaml using python and PyYAML
+    python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < "$1"
 }
 
 function yaml2json() {
-  # convert yaml files to json using python and PyYAML
-  python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "$1"
+    # convert yaml files to json using python and PyYAML
+    python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "$1"
 }

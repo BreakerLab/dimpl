@@ -31,10 +31,10 @@ scriptPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 utilsLocation="${scriptPath}/src/lib/shell-scripts/utils.sh" #
 
 if [ -f "${utilsLocation}" ]; then
-  source "${utilsLocation}"
+    source "${utilsLocation}"
 else
-  echo "Please find the file util.sh and add a reference to it in this script. Exiting."
-  exit 1
+    echo "Please find the file util.sh and add a reference to it in this script. Exiting."
+    exit 1
 fi
 
 # trapCleanup Function
@@ -43,11 +43,11 @@ fi
 # exited.  Always call this function at the top of your script.
 # -----------------------------------
 function trapCleanup() {
-  echo ""
-  if is_dir "${tmpDir}"; then
-    rm -r "${tmpDir}"
-  fi
-  die "Exit trapped."  # Edit this if you like.
+    echo ""
+    if is_dir "${tmpDir}"; then
+        rm -r "${tmpDir}"
+    fi
+    die "Exit trapped."  # Edit this if you like.
 }
 
 # Set Flags
@@ -72,7 +72,7 @@ args=()
 # -----------------------------------
 tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
 (umask 077 && mkdir "${tmpDir}") || {
-  die "Could not create temporary directory! Exiting."
+    die "Could not create temporary directory! Exiting."
 }
 
 # Logging
@@ -170,7 +170,7 @@ safeExit
 function configure() {
 
 if is_file "${scriptPath}/.env"; then
-  rm ./.env
+    rm ./.env
 fi
 touch .env
 
@@ -244,24 +244,24 @@ docker exec -w /home/jovyan/work --user jovyan ${DOCKER_services_notebook_contai
 
 # Print usage
 usage() {
-  echo -n "${scriptName} [OPTION]... [INSTANCE NAME SUFFIX]
+    echo -n "${scriptName} [OPTION]... [INSTANCE NAME SUFFIX]
 
- Instance Name Suffix: [optional]
-  Used for starting multiple Dimpl docker containers.
-  Example: 'start.sh test' would create container name of 'dimpl_test'
+    Instance Name Suffix: [optional]
+    Used for starting multiple Dimpl docker containers.
+    Example: 'start.sh test' would create container name of 'dimpl_test'
 
- Options:
-  -m, --make        Run the 'make data' command inside docker-container upon completion
-  -c, --configure   Prompt for environment variables, even if already present
-  -p, --password    MYSQL password
-  --force           Skip all user interaction.  Implied 'Yes' to all actions.
-  -q, --quiet       Quiet (no output)
-  -l, --log         Print log to file
-  -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
-  -v, --verbose     Output more information. (Items echoed to 'verbose')
-  -d, --debug       Runs script in BASH debug mode (set -x)
-  -h, --help        Display this help and exit
-      --version     Output version information and exit
+    Options:
+    -m, --make        Run the 'make data' command inside docker-container upon completion
+    -c, --configure   Prompt for environment variables, even if already present
+    -p, --password    MYSQL password
+    --force           Skip all user interaction.  Implied 'Yes' to all actions.
+    -q, --quiet       Quiet (no output)
+    -l, --log         Print log to file
+    -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
+    -v, --verbose     Output more information. (Items echoed to 'verbose')
+    -d, --debug       Runs script in BASH debug mode (set -x)
+    -h, --help        Display this help and exit
+        --version     Output version information and exit
 "
 }
 
@@ -270,33 +270,33 @@ usage() {
 optstring=h
 unset options
 while (($#)); do
-  case $1 in
-    # If option is of type -ab
-    -[!-]?*)
-      # Loop over each character starting with the second
-      for ((i=1; i < ${#1}; i++)); do
-        c=${1:i:1}
+    case $1 in
+        # If option is of type -ab
+        -[!-]?*)
+        # Loop over each character starting with the second
+        for ((i=1; i < ${#1}; i++)); do
+            c=${1:i:1}
 
-        # Add current char to options
-        options+=("-$c")
+            # Add current char to options
+            options+=("-$c")
 
-        # If option takes a required argument, and it's not the last char make
-        # the rest of the string its argument
-        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
-          options+=("${1:i+1}")
-          break
-        fi
-      done
-      ;;
+            # If option takes a required argument, and it's not the last char make
+            # the rest of the string its argument
+            if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+            options+=("${1:i+1}")
+            break
+            fi
+        done
+        ;;
 
-    # If option is of type --foo=bar
-    --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
-    # add --endopts for --
-    --) options+=(--endopts) ;;
-    # Otherwise, nothing special
-    *) options+=("$1") ;;
-  esac
-  shift
+        # If option is of type --foo=bar
+        --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
+        # add --endopts for --
+        --) options+=(--endopts) ;;
+        # Otherwise, nothing special
+        *) options+=("$1") ;;
+    esac
+    shift
 done
 set -- "${options[@]}"
 unset options
@@ -307,23 +307,23 @@ unset options
 
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
-  case $1 in
-    -h|--help) usage >&2; safeExit ;;
-    --version) echo "$(basename $0) ${version}"; safeExit ;;
-    -c|--configure) shift; configure=1 ;;
-    -m|--make) shift; make=1 ;;
-    -p|--password) shift; echo "Enter MYSQL Password: "; stty -echo; read MYSQLPASS; stty echo;
-      echo ;;
-    -v|--verbose) verbose=1 ;;
-    -l|--log) printLog=1 ;;
-    -q|--quiet) quiet=1 ;;
-    -s|--strict) strict=1;;
-    -d|--debug) debug=1;;
-    --force) force=1 ;;
-    --endopts) shift; break ;;
-    *) die "invalid option: '$1'." ;;
-  esac
-  shift
+    case $1 in
+        -h|--help) usage >&2; safeExit ;;
+        --version) echo "$(basename $0) ${version}"; safeExit ;;
+        -c|--configure) shift; configure=1 ;;
+        -m|--make) shift; make=1 ;;
+        -p|--password) shift; echo "Enter MYSQL Password: "; stty -echo; read MYSQLPASS; stty echo;
+        echo ;;
+        -v|--verbose) verbose=1 ;;
+        -l|--log) printLog=1 ;;
+        -q|--quiet) quiet=1 ;;
+        -s|--strict) strict=1;;
+        -d|--debug) debug=1;;
+        --force) force=1 ;;
+        --endopts) shift; break ;;
+        *) die "invalid option: '$1'." ;;
+    esac
+    shift
 done
 
 # Store the remaining part as arguments.
@@ -350,12 +350,12 @@ set -o errexit
 
 # Run in debug mode, if set
 if [ "${debug}" == "1" ]; then
-  set -x
+    set -x
 fi
 
 # Exit on empty variable
 if [ "${strict}" == "1" ]; then
-  set -o nounset
+    set -o nounset
 fi
 
 # Bash will remember & return the highest exitcode in a chain of pipes.

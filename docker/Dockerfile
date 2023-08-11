@@ -46,9 +46,9 @@ RUN cd /opt && \
     tar -xzf rscape.tar.gz && \
     rm rscape.tar.gz &&\
     cd rscape_v* && \
-    ./configure && \ 
+    ./configure && \
     make && \
-    make install && \ 
+    make install && \
     cp bin/* /usr/local/bin
 
 #Install Turbofold

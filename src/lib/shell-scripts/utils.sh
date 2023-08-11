@@ -33,30 +33,30 @@ tan=$(tput setaf 3)
 blue=$(tput setaf 38)
 
 function _alert() {
-  if [ "${1}" = "emergency" ]; then
-    local color="${bold}${red}"
-  fi
-  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
-  if [ "${1}" = "warning" ]; then local color="${red}"; fi
-  if [ "${1}" = "success" ]; then local color="${green}"; fi
-  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
-  if [ "${1}" = "header" ]; then local color="${bold}""${tan}"; fi
-  if [ "${1}" = "input" ]; then local color="${bold}"; printLog="false"; fi
-  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
-  # Don't use colors on pipes or non-recognized terminals
-  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
+    if [ "${1}" = "emergency" ]; then
+        local color="${bold}${red}"
+    fi
+    if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
+    if [ "${1}" = "warning" ]; then local color="${red}"; fi
+    if [ "${1}" = "success" ]; then local color="${green}"; fi
+    if [ "${1}" = "debug" ]; then local color="${purple}"; fi
+    if [ "${1}" = "header" ]; then local color="${bold}""${tan}"; fi
+    if [ "${1}" = "input" ]; then local color="${bold}"; printLog="false"; fi
+    if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
+    # Don't use colors on pipes or non-recognized terminals
+    if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
 
-  # Print to $logFile
-  if [[ ${printLog} = "true" ]] || [ "${printLog}" == "1" ]; then
-    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%9s]" "${1}") ${_message}" >> "${logFile}";
-  fi
+    # Print to $logFile
+    if [[ ${printLog} = "true" ]] || [ "${printLog}" == "1" ]; then
+        echo -e "$(date +"%m-%d-%Y %r") $(printf "[%9s]" "${1}") ${_message}" >> "${logFile}";
+    fi
 
-  # Print to console when script is not 'quiet'
-  if [[ "${quiet}" = "true" ]] || [ "${quiet}" == "1" ]; then
-   return
-  else
-   echo -e "$(date +"%r") ${color}$(printf "[%9s]" "${1}") ${_message}${reset}";
-  fi
+    # Print to console when script is not 'quiet'
+    if [[ "${quiet}" = "true" ]] || [ "${quiet}" == "1" ]; then
+    return
+    else
+    echo -e "$(date +"%r") ${color}$(printf "[%9s]" "${1}") ${_message}${reset}";
+    fi
 
 }
 
@@ -72,9 +72,9 @@ function header()     { local _message="========== ${*} ==========  "; echo "$(_
 
 # Log messages when verbose is set to "true"
 verbose() {
-  if [[ "${verbose}" = "true" ]] || [ "${verbose}" == "1" ]; then
-    debug "$@"
-  fi
+    if [[ "${verbose}" = "true" ]] || [ "${verbose}" == "1" ]; then
+        debug "$@"
+    fi
 }
 
 
@@ -85,23 +85,23 @@ verbose() {
 # Doing so allows us to source additional files from this utils file.
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "${SOURCE}" ]; do # resolve ${SOURCE} until the file is no longer a symlink
-  DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
-  SOURCE="$(readlink "${SOURCE}")"
-  [[ ${SOURCE} != /* ]] && SOURCE="${DIR}/${SOURCE}" # if ${SOURCE} was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
+    SOURCE="$(readlink "${SOURCE}")"
+    [[ ${SOURCE} != /* ]] && SOURCE="${DIR}/${SOURCE}" # if ${SOURCE} was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
 SOURCEPATH="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
 
 if [ ! -d "${SOURCEPATH}" ]
 then
-  die "Failed to find library files expected in: ${SOURCEPATH}"
+    die "Failed to find library files expected in: ${SOURCEPATH}"
 fi
 for utility_file in "${SOURCEPATH}"/*.sh
 do
-  if [ -e "${utility_file}" ]; then
-    # Don't source self
-    if [[ "${utility_file}" == *"utils.sh"* ]]; then
-      continue
+    if [ -e "${utility_file}" ]; then
+        # Don't source self
+        if [[ "${utility_file}" == *"utils.sh"* ]]; then
+        continue
+        fi
+        source "$utility_file"
     fi
-    source "$utility_file"
-  fi
 done

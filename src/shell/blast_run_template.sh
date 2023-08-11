@@ -14,7 +14,7 @@ if [ -n "$EMAIL" ]; then email_option="--mail-user $EMAIL --mail-type END"; fi
 
 echo "Generating batchfile at $batchfile"
 dSQ.py --jobfile $jobfile --batch-file $batchfile --nice \
-  --partition $PARTITION --mem 70G --chdir $parent_dir \
-  --output output/blast_output%4a.out --job-name blast.$(basename $parent_dir) $email_option
+    --partition $PARTITION --mem 70G --chdir $parent_dir \
+    --output output/blast_output%4a.out --job-name blast.$(basename $parent_dir) $email_option
 
 sbatch $batchfile

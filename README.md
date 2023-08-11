@@ -1,80 +1,92 @@
-# DIMPL (Discovery of Intergenic Motifs PipeLine)
-==============================
+[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 
-### Summary
+[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.04.0-23aa62.svg)](https://www.nextflow.io/)
+[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
+[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
+[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
+[![Launch on Nextflow Tower](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Nextflow%20Tower-%234256e7)](https://tower.nf/launch?pipeline=https://github.com/kenibrewer/dimpl)
 
-The DIMPL discovery pipeline enables rapid extraction and selection of bacterial IGRs that are enriched for structured ncRNAs. DIMPL also automates the subsequent computational steps necessary for their functional identification.
+## Introduction
 
-### Requirements
+**kenibrewer/dimpl** is a bioinformatics pipeline that ...
 
-#### For Local Computer
+<!-- TODO nf-core:
+   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
+   major pipeline sections and the types of output it produces. You're giving an overview to someone new
+   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
+-->
 
-* [Docker Desktop/Engine](https://hub.docker.com/search?q=&type=edition&offering=community&sort=updated_at&order=desc)
+<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
+     workflows use the "tube map" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->
+<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 
-#### For Compute Cluster
+1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
+2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
 
-* [Infernal v1.1.4](http://eddylab.org/infernal/)
-* [BLAST+ v2.11.0+](https://www.ncbi.nlm.nih.gov/books/NBK279680/)
-* [CMfinder v0.4.1.18+](https://sourceforge.net/projects/weinberg-cmfinder/)
-* [Dead Simple Queue v1.05+](https://github.com/ycrc/dSQ)
-* [Slurm v20.02+](https://slurm.schedmd.com/quickstart.html)
+## Usage
 
-### Quick-start
+> **Note**
+> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how
+> to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline)
+> with `-profile test` before running the workflow on actual data.
 
-#### Cluster Configuration
+<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
+     Explain what rows and columns represent. For instance (please edit as appropriate):
 
-1. Download the IGR search database (filename: s50.igr.fasta) from [this link](https://app.globus.org/file-manager?origin_id=347584ae-43bf-11ec-a6bf-9b4f84e67de8&origin_path=%2F) to your cluster using [Globus FTP](https://www.globus.org/).
+First, prepare a samplesheet with your input data that looks as follows:
 
-2. Ensure the availability of the BLAST nr database on your computational cluster. Follow [these instructions](https://www.ncbi.nlm.nih.gov/books/NBK537770/) for updating/downloading the latest version.
+`samplesheet.csv`:
 
-#### Local Configuration
+```csv
+sample,fastq_1,fastq_2
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+```
 
-1. Download the source code (into any folder on drive)
+Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
 
-    `wget https://github.com/BreakerLab/dimpl/archive/dimpl_1.0.2.tar.gz`  
-    `tar xzvf dimpl_1.0.2.tar.gz`
+-->
 
-2. Download the docker image. 
+Now, you can run the pipeline using:
 
-    `docker pull breakerlab/dimpl`
+<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
 
-3. Configure docker to grant containers access to the folder where the DIMPL repository is located
+```bash
+nextflow run kenibrewer/dimpl \
+   -profile <docker/singularity/.../institute> \
+   --input samplesheet.csv \
+   --outdir <OUTDIR>
+```
 
-4. Modify the configuration file found at dimpl/src/shell/cluster.conf with the database locations and appropriate commands for importing utilities on your cluster. 
+> **Warning:**
+> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those
+> provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
+> see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
 
-5. Run `./start.sh` in the main repository directory. Follow the first-time configuration instructions (asks for email and NCBI API key).
+## Credits
 
-6. Follow the link generated by the `start.sh` script to access the DIMPL jupyter notebooks.
+kenibrewer/dimpl was originally written by Kenneth Brewer.
 
-#### Data Transfer between Local Machine and Cluster
+We thank the following people for their extensive assistance in the development of this pipeline:
 
-The DIMPL notebooks generate compressed .tar.gz files consisting of all the scripts and data necessary to run the more computationally demanding steps on a cluster. These .tar.gz files are placed in the directory data/export. After transferring the files to a cluster they should be unpacked using the command `tar xzvf data-dir.tar.gz`. When tasks on the cluster complete the directory should be recompressed using the command `tar czvf data-dir.tar.gz data-dir`.
+<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
-### File Organization
-------------
+## Contributions and Support
 
-    ├── .env                    <- File generated during configuration step of start.sh
-    ├── LICENSE
-    ├── README.md               <- This document
-    ├── start.sh                <- Script to perform initial configuration and start the docker container
-    ├── data
-    │   ├── export              <- Where DIMPL places data and bash script tar.gz files  
-    │   ├── import              <- Where to place re-compressed tar.gz files that have been run on a compute cluster
-    │   ├── interim             <- Where processed genomic data is stored during analysis
-    │   └── raw                 <- The original genomic data.
-    │
-    ├── docs                    <- Sphinx documentation for DIMPL
-    │
-    ├── notebooks               <- Jupyter notebooks for the various steps of DIMPL
-    │   ├── 1-Genome-IGR-Selection.ipynb    <- 
-    │   ├── 2-BLAST-Processing.ipynb        <- 
-    │   ├── 3-IGR-Report.ipynb              <- 
-    │   └── 4-Motif-Refinement.ipynb        <- 
-    │
-    ├── requirements.txt        <- The requirements file for reproducing the analysis environment, e.g.
-    │                              generated with `pip freeze > requirements.txt`
-    │
-    ├── setup.py                <- makes project pip installable (pip install -e .) so src can be imported
-    └── src                     <- Source code for use in this project.
-        └── shell               <- The original genomic data.
-            └── cluster.conf    <- Configuration file for the compute environment.
+If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
+
+## Citations
+
+<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
+<!-- If you use  kenibrewer/dimpl for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+
+<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
+
+An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
+
+This pipeline uses code and infrastructure developed and maintained by the [nf-core](https://nf-co.re) community, reused here under the [MIT license](https://github.com/nf-core/tools/blob/master/LICENSE).
+
+> **The nf-core framework for community-curated bioinformatics pipelines.**
+>
+> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
+>
+> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).

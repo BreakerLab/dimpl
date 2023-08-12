@@ -130,9 +130,9 @@ else
     # "docker-compose" will be phased out in the future.
     # Use "docker compose" instead.
     if [ "$(docker compose version 2>/dev/null)" ]; then
-	docker-compose() {
-	    docker compose $@
-	}
+    docker-compose() {
+        docker compose $@
+    }
     fi
 
     info "Launching/Restarting '$container' docker container"
